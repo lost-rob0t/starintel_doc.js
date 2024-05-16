@@ -1,5 +1,5 @@
 {
-  description = "A set of Node-RED nodes to work with documents in a Cloudant database that is integrated with IBM Cloud or an on-premises CouchDB. This version is a superset of the functionality in the original Cloudant node and replicates the functionality of the node-red-contrib-cloudantplus node and will eventually replace it.";
+  description = "The starintel document model for javascript!";
 
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs";
