@@ -1,23 +1,27 @@
 {
   description = "The starintel document model for javascript!";
-
   inputs = {
-    nixpkgs.url = "github:nixos/nixpkgs";
+    flake-utils.url = "github:numtide/flake-utils";
   };
 
-  outputs = { self, nixpkgs }:
-    let
-      pkgs = nixpkgs.legacyPackages.x86_64-linux;
-    in
-    {
-      devShell.x86_64-linux =
-        pkgs.mkShell {
-          buildInputs = with pkgs; [
-            nodejs_20
-          ];
-          shellHook = ''
-            export LD_LIBRARY_PATH=${pkgs.lib.makeLibraryPath([pkgs.openssl])}
-          '';
+  outputs = { self, nixpkgs, flake-utils }:
+    flake-utils.lib.eachDefaultSystem (system:
+      let
+        pkgs = import nixpkgs {
+          inherit system;
         };
-    };
+
+      in rec {
+        flakedPkgs = pkgs;
+
+        # enables use of `nix shell`
+        devShell = pkgs.mkShell {
+          # add things you want in your shell here
+          buildInputs = with pkgs; [
+            nodejs
+            nodePackages_latest.prettier
+          ];
+        };
+      }
+    );
 }
