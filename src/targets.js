@@ -7,6 +7,7 @@ class Target extends Document {
     this.target = data.target ?? missingField("target");
     this.delay = data.delay ?? 0;
     this.recurring = data.recurring ?? false;
+    // Array of Object
     this.options = data.options ?? [];
   }
 }
