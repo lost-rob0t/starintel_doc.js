@@ -17,7 +17,7 @@ class Scope extends Document {
     this.description = data.description ?? missingField("description");
     this.outScope = data.outScope ?? [];
     this.inScope = data.inScope ?? missingField("inScope");
-    this.scopeType = data.scopeType ?? "domain";
+    this.scopeType = data.scopeType ?? missingField("scopeType");
   }
 }
 
