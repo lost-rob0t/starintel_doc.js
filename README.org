@@ -1,0 +1,6 @@
+#+title: Readme
+
+* Starintel Doc
+Starintel is a framework for injesting disparate osint sources and making them searchble by defining a set of common objects.
+
+This is the object model, here you will find the objets + creation funcs.
