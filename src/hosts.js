@@ -49,7 +49,7 @@ Domain.prototype.setId = function () {
   this.hashId(this.record, this.recordType);
 };
 
-Port.prototype.setId = function () {
+Service.prototype.setId = function () {
   this.hashId(this.number, this.services);
 };
 
