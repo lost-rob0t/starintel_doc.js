@@ -25,5 +25,8 @@ jobs:
       - run: npm run sync-schema
       - run: npm run check-schema
       - run: npm run check
-      - run: npm test
+      - name: Runtime and Schema.org tests
+        run: node --test test/document.test.js
+      - name: v0.9 conformance tests
+        run: node --test test/v09-conformance.test.js
       - run: npm pack --dry-run
