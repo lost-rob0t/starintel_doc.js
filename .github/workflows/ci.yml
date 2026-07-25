@@ -32,7 +32,27 @@ jobs:
       - name: Expanded dtype aliases
         run: node --test --test-name-pattern='supports expanded names' test/document.test.js
       - name: Organization validation
-        run: node -e 'const {createDocument,assertDocument}=require("./src"); const d=createDocument("org",{_id:"starintel:org:test",dataset:"test",title:"Test Org",data:{name:"Test Org",org_type:"company"}}); assertDocument(d);'
+        shell: bash
+        run: |
+          node <<'NODE'
+          const fs = require("node:fs");
+          const { createDocument, validateDocument } = require("./src");
+          const document = createDocument("org", {
+            _id: "starintel:org:test",
+            dataset: "test",
+            title: "Test Org",
+            data: { name: "Test Org", org_type: "company" }
+          });
+          const result = validateDocument(document, { normalize: false });
+          fs.writeFileSync("/tmp/org-validation.json", JSON.stringify({ document, result }, null, 2));
+          if (!result.valid) process.exit(1);
+          NODE
+      - name: Upload organization validation details
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: organization-validation
+          path: /tmp/org-validation.json
       - name: Relation validation
         run: node -e 'const {createRelation,assertDocument}=require("./src"); const d=createRelation({_id:"starintel:relation:test-founded",dataset:"test",subject:"starintel:person:test",predicate:"founded",object:"starintel:org:test"}); assertDocument(d);'
       - name: Entity and relation assertions
