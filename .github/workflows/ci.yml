@@ -32,27 +32,7 @@ jobs:
       - name: Expanded dtype aliases
         run: node --test --test-name-pattern='supports expanded names' test/document.test.js
       - name: Organization validation
-        shell: bash
-        run: |
-          node <<'NODE'
-          const fs = require("node:fs");
-          const { createDocument, validateDocument } = require("./src");
-          const document = createDocument("org", {
-            _id: "starintel:org:test",
-            dataset: "test",
-            title: "Test Org",
-            data: { name: "Test Org", org_type: "company" }
-          });
-          const result = validateDocument(document, { normalize: false });
-          fs.writeFileSync("/tmp/org-validation.json", JSON.stringify({ document, result }, null, 2));
-          if (!result.valid) process.exit(1);
-          NODE
-      - name: Upload organization validation details
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: organization-validation
-          path: /tmp/org-validation.json
+        run: node -e 'const {createDocument,assertDocument}=require("./src"); const d=createDocument("org",{_id:"starintel:org:test",dataset:"test",title:"Test Org",data:{name:"Test Org",org_type:"company"}}); assertDocument(d);'
       - name: Relation validation
         run: node -e 'const {createRelation,assertDocument}=require("./src"); const d=createRelation({_id:"starintel:relation:test-founded",dataset:"test",subject:"starintel:person:test",predicate:"founded",object:"starintel:org:test"}); assertDocument(d);'
       - name: Entity and relation assertions
@@ -63,6 +43,14 @@ jobs:
         run: node --test --test-name-pattern='rejects undeclared direct Schema.org' test/document.test.js
       - name: Strict unknown fields
         run: node --test --test-name-pattern='rejects unknown top-level' test/document.test.js
-      - name: v0.9 conformance tests
-        run: node --test test/v09-conformance.test.js
+      - name: Bundle hash verification
+        run: node --test --test-name-pattern='schema expansion manifest verifies' test/v09-conformance.test.js
+      - name: Additive dtype field coverage
+        run: node --test --test-name-pattern='all dtypes expose additive fields' test/v09-conformance.test.js
+      - name: Revisioned required fields
+        run: node --test --test-name-pattern='normalized documents carry revisioned required fields' test/v09-conformance.test.js
+      - name: Expanded metadata validation
+        run: node --test --test-name-pattern='expanded dtype metadata validates' test/v09-conformance.test.js
+      - name: Stable document IDs
+        run: node --test --test-name-pattern='stable ids are deterministic' test/v09-conformance.test.js
       - run: npm pack --dry-run
