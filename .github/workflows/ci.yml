@@ -23,7 +23,7 @@ jobs:
           node-version: 22
       - run: npm install
       - run: npm run sync-schema
+      - run: npm run check-schema
       - run: npm run check
-      - run: node scripts/sync-schema.mjs --check
       - run: npm test
       - run: npm pack --dry-run
