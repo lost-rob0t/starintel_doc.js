@@ -1,28 +1,28 @@
-const path = require("node:path");
 const Ajv2020 = require("ajv/dist/2020");
 const addFormats = require("ajv-formats");
 const { normalizeDocument } = require("./document");
 const { augmentSchema } = require("./schema-org");
+const { materializeSchema, verifyBundle } = require("./schema-bundle");
 
-const schemaPath = path.join(__dirname, "..", "schema", "starintel-doc-v0.9.0.schema.json");
 let compiled = null;
 let schemaCache = null;
 
 function loadSchema() {
   if (!schemaCache) {
-    try {
-      schemaCache = augmentSchema(require(schemaPath));
-    } catch (error) {
-      error.message = `StarIntel v0.9 schema is missing. Run npm run sync-schema. ${error.message}`;
-      throw error;
-    }
+    verifyBundle();
+    schemaCache = augmentSchema(materializeSchema());
   }
   return schemaCache;
 }
 
 function validator() {
   if (!compiled) {
-    const ajv = new Ajv2020({ allErrors: true, strict: false, allowUnionTypes: true });
+    const ajv = new Ajv2020({
+      allErrors: true,
+      strict: true,
+      strictSchema: false,
+      allowUnionTypes: true
+    });
     addFormats(ajv);
     compiled = ajv.compile(loadSchema());
   }
@@ -49,6 +49,10 @@ function validateDocument(document, options = {}) {
   };
 }
 
+function validateRawDocument(document) {
+  return validateDocument(document, { normalize: false });
+}
+
 function assertDocument(document, options = {}) {
   const result = validateDocument(document, options);
   if (!result.valid) {
@@ -59,6 +63,10 @@ function assertDocument(document, options = {}) {
     throw error;
   }
   return result.document;
+}
+
+function assertRawDocument(document) {
+  return assertDocument(document, { normalize: false });
 }
 
 function validateDocuments(documents, options = {}) {
@@ -73,7 +81,9 @@ function validateDocuments(documents, options = {}) {
 module.exports = {
   loadSchema,
   validateDocument,
+  validateRawDocument,
   validateDocuments,
   assertDocument,
+  assertRawDocument,
   formatErrors
 };
