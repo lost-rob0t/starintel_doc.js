@@ -25,8 +25,20 @@ jobs:
       - run: npm run sync-schema
       - run: npm run check-schema
       - run: npm run check
-      - name: Runtime and Schema.org tests
-        run: node --test test/document.test.js
+      - name: Envelope normalization
+        run: node --test --test-name-pattern='normalizes the canonical' test/document.test.js
+      - name: Canonical dtype coverage
+        run: node --test --test-name-pattern='supports every canonical' test/document.test.js
+      - name: Expanded dtype aliases
+        run: node --test --test-name-pattern='supports expanded names' test/document.test.js
+      - name: Entity and relation documents
+        run: node --test --test-name-pattern='creates schema-valid' test/document.test.js
+      - name: Schema.org JSON-LD metadata
+        run: node --test --test-name-pattern='accepts strict Schema.org' test/document.test.js
+      - name: Schema.org strict fields
+        run: node --test --test-name-pattern='rejects undeclared direct Schema.org' test/document.test.js
+      - name: Strict unknown fields
+        run: node --test --test-name-pattern='rejects unknown top-level' test/document.test.js
       - name: v0.9 conformance tests
         run: node --test test/v09-conformance.test.js
       - run: npm pack --dry-run
