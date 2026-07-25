@@ -22,8 +22,8 @@ jobs:
           registry-url: https://registry.npmjs.org
       - run: npm install
       - run: npm run sync-schema
+      - run: npm run check-schema
       - run: npm run check
-      - run: node scripts/sync-schema.mjs --check
       - run: npm test
       - run: npm pack
       - uses: actions/upload-artifact@v4
