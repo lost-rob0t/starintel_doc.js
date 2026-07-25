@@ -17,7 +17,7 @@
     "LICENSE"
   ],
   "scripts": {
-    "test": "node --test --test-concurrency=1 test/document.test.js test/v09-conformance.test.js",
+    "test": "node --test test/document.test.js && node --test test/v09-conformance.test.js",
     "check": "node --check src/index.js && node --check src/document.js && node --check src/schema-bundle.js && node --check src/schema-org.js && node --check src/validation.js && node --check scripts/sync-schema.mjs",
     "check-schema": "node scripts/sync-schema.mjs --offline --check",
     "sync-schema": "node scripts/sync-schema.mjs",
