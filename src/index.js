@@ -11,7 +11,6 @@ module.exports = {
   expansion: schemaBundle.expansion,
   manifest: schemaBundle.manifest,
   verifySchemaBundle: schemaBundle.verifyBundle,
-  materializeSchema: schemaBundle.materializeSchema,
   fieldsForDtype: schemaBundle.fieldNamesForDtype,
   get schema() {
     return validation.loadSchema();
