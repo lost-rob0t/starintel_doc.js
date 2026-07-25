@@ -16,7 +16,7 @@
   ],
   "scripts": {
     "test": "node --test",
-    "check": "node --check src/index.js && node --check src/document.js && node --check src/validation.js && node --check scripts/sync-schema.mjs",
+    "check": "node --check src/index.js && node --check src/document.js && node --check src/schema-org.js && node --check src/validation.js && node --check scripts/sync-schema.mjs",
     "sync-schema": "node scripts/sync-schema.mjs",
     "prepare": "npm run sync-schema",
     "prepack": "npm run sync-schema && npm run check && npm test && test -s schema/starintel-doc-v0.9.0.schema.json"
@@ -25,6 +25,8 @@
     "starintel",
     "osint",
     "json-schema",
+    "json-ld",
+    "schema.org",
     "validation",
     "pouchdb",
     "couchdb"
