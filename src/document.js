@@ -1,12 +1,12 @@
 const { createHash, randomUUID } = require("node:crypto");
 const { schemaOrgMetadata } = require("./schema-org");
-const { manifest } = require("./schema-bundle");
+const { baseSchema, manifest } = require("./schema-bundle");
 
 const SCHEMA_VERSION = manifest.schema_version;
 const SCHEMA_REVISION = manifest.schema_revision;
 const SCHEMA_PROFILE = manifest.profile;
 const SCHEMA_PROFILE_VERSION = manifest.profile_version;
-const SCHEMA_URI = "https://starintel.dev/schema/starintel-doc-v0.9.0.json";
+const SCHEMA_URI = baseSchema.$id;
 
 const CANONICAL_DTYPES = Object.freeze([
   "actor-manifest",
@@ -109,25 +109,24 @@ function slug(value) {
     .replace(/^-+|-+$/g, "") || "document";
 }
 
-function canonicalize(value) {
-  if (Array.isArray(value)) return value.map(canonicalize);
-  if (!value || typeof value !== "object") return value;
-  return Object.fromEntries(Object.keys(value).sort().map((key) => [key, canonicalize(value[key])]));
-}
-
-function stableDocumentId(dtype, ...identity) {
+function stableDocumentId(dtype, identity) {
   const canonical = canonicalDtype(dtype);
-  if (!CANONICAL_DTYPES.includes(canonical)) throw new RangeError(`unknown StarIntel dtype: ${dtype}`);
-  const raw = identity.map((item) => JSON.stringify(canonicalize(item))).join("\x1f");
-  const digest = createHash("sha256").update(raw).digest("hex").slice(0, 20);
-  const label = slug(identity.length ? identity[0] : digest).slice(0, 64);
+  const values = Array.isArray(identity) ? identity : [identity];
+  const key = values.map((value) => JSON.stringify(value ?? "")).join("\u001f");
+  const digest = createHash("sha256").update(key).digest("hex").slice(0, 20);
+  const label = slug(values.find((value) => value != null && value !== "") || digest).slice(0, 64);
   return `starintel:${canonical}:${label}-${digest}`;
 }
 
-function makeDocumentId(dtype, hint) {
-  if (hint != null && String(hint).trim()) return stableDocumentId(dtype, hint);
-  const id = globalThis.crypto?.randomUUID ? globalThis.crypto.randomUUID() : randomUUID();
-  return `starintel:${canonicalDtype(dtype)}:${id}`;
+function randomId() {
+  return randomUUID();
+}
+
+function makeDocumentId(dtype, hint, options = {}) {
+  if (options.stable || Array.isArray(options.identity)) {
+    return stableDocumentId(dtype, options.identity || [hint]);
+  }
+  return `starintel:${canonicalDtype(dtype)}:${slug(hint || randomId())}`;
 }
 
 function normalizeDocument(input, options = {}) {
@@ -135,10 +134,11 @@ function normalizeDocument(input, options = {}) {
   const stamp = options.now || nowIso();
   const dtype = canonicalDtype(source.dtype || options.dtype || "document");
   const titleHint = source.title || source.data?.name || source.data?.full_name || source.data?.target;
-  const id = source._id || options.id || makeDocumentId(dtype, titleHint);
+  const id = source._id || options.id || makeDocumentId(dtype, titleHint, options);
   const explicitSchemaOrg = source.schema_org && typeof source.schema_org === "object" && !Array.isArray(source.schema_org)
     ? source.schema_org
     : {};
+  const data = source.data && typeof source.data === "object" && !Array.isArray(source.data) ? source.data : {};
   const lineage = source.lineage && typeof source.lineage === "object" && !Array.isArray(source.lineage)
     ? source.lineage
     : {};
@@ -159,25 +159,28 @@ function normalizeDocument(input, options = {}) {
     sources: Array.isArray(source.sources) ? source.sources : [],
     evidence: Array.isArray(source.evidence) ? source.evidence : [],
     object_marking_ids: Array.isArray(source.object_marking_ids) ? source.object_marking_ids : [],
-    revoked: source.revoked === true,
-    deleted: source.deleted === true,
-    lineage: { ...lineage, schema_revision: SCHEMA_REVISION },
+    revoked: Boolean(source.revoked),
+    deleted: Boolean(source.deleted),
+    lineage: {
+      ...lineage,
+      schema_revision: lineage.schema_revision || SCHEMA_REVISION
+    },
     schema_org: {
       ...schemaOrgMetadata(dtype, id),
       ...explicitSchemaOrg
     },
-    data: source.data && typeof source.data === "object" && !Array.isArray(source.data) ? source.data : {},
+    data,
     extensions: source.extensions && typeof source.extensions === "object" && !Array.isArray(source.extensions)
       ? source.extensions
       : {}
   };
 }
 
-function createDocument(dtype, input = {}) {
-  return normalizeDocument({ ...input, dtype }, { dtype });
+function createDocument(dtype, input = {}, options = {}) {
+  return normalizeDocument({ ...input, dtype }, { ...options, dtype });
 }
 
-function createRelation(input = {}) {
+function createRelation(input = {}, options = {}) {
   const {
     subject: explicitSubject,
     source,
@@ -202,7 +205,7 @@ function createRelation(input = {}) {
       object,
       directed: directed ?? true
     }
-  });
+  }, options);
 }
 
 function touchDocument(document, changes = {}, now = nowIso()) {
@@ -210,16 +213,26 @@ function touchDocument(document, changes = {}, now = nowIso()) {
     ...clone(document),
     ...clone(changes),
     version: Math.max(1, Number(document?.version || 1) + 1),
-    date_updated: now
+    date_updated: now,
+    modified_by_ref: changes.modified_by_ref || document?.modified_by_ref
   });
 }
 
 function isStarIntelDocument(value) {
-  return Boolean(value && typeof value === "object" && value._id && value.dtype && value.data);
+  return Boolean(
+    value
+    && typeof value === "object"
+    && value._id
+    && value.dtype
+    && value.schema_version === SCHEMA_VERSION
+    && value.data
+  );
 }
 
 function documentLabel(document) {
   return document?.title
+    || document?.data?.display_label
+    || document?.data?.canonical_name
     || document?.data?.display_name
     || document?.data?.full_name
     || document?.data?.name
@@ -233,9 +246,9 @@ function documentLabel(document) {
 module.exports = {
   SCHEMA_VERSION,
   SCHEMA_REVISION,
+  SCHEMA_URI,
   SCHEMA_PROFILE,
   SCHEMA_PROFILE_VERSION,
-  SCHEMA_URI,
   CANONICAL_DTYPES,
   DTYPE_ALIASES,
   canonicalDtype,
