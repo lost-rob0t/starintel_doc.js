@@ -1,4 +1,4 @@
-name: Sync canonical schema
+name: Sync canonical schema bundle
 
 on:
   push:
@@ -30,18 +30,23 @@ jobs:
       - uses: actions/setup-node@v6
         with:
           node-version: 22
-      - name: Materialize canonical v0.9 schema
+      - name: Synchronize canonical v0.9 bundle
         run: node scripts/sync-schema.mjs
-      - name: Commit schema update
+      - name: Verify synchronized bundle
+        run: node scripts/sync-schema.mjs --offline --check
+      - name: Commit schema bundle update
         shell: bash
         run: |
           set -euo pipefail
-          git add schema/starintel-doc-v0.9.0.schema.json
+          git add \
+            schema/starintel-doc-v0.9.0.schema.json \
+            schema/starintel-doc-v0.9.0.expansion.json \
+            schema/starintel-doc-v0.9.0.manifest.json
           if git diff --cached --quiet; then
-            echo "Schema already current"
+            echo "Schema bundle already current"
             exit 0
           fi
           git config user.name "starintel-schema-bot"
           git config user.email "starintel-schema-bot@users.noreply.github.com"
-          git commit -m "Sync canonical StarIntel v0.9 schema"
+          git commit -m "Sync canonical StarIntel v0.9 schema bundle"
           git push origin "HEAD:${GITHUB_REF_NAME}"
