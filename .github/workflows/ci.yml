@@ -31,7 +31,11 @@ jobs:
         run: node --test --test-name-pattern='supports every canonical' test/document.test.js
       - name: Expanded dtype aliases
         run: node --test --test-name-pattern='supports expanded names' test/document.test.js
-      - name: Entity and relation documents
+      - name: Organization validation
+        run: node -e 'const {createDocument,assertDocument}=require("./src"); const d=createDocument("org",{_id:"starintel:org:test",dataset:"test",title:"Test Org",data:{name:"Test Org",org_type:"company"}}); assertDocument(d);'
+      - name: Relation validation
+        run: node -e 'const {createRelation,assertDocument}=require("./src"); const d=createRelation({_id:"starintel:relation:test-founded",dataset:"test",subject:"starintel:person:test",predicate:"founded",object:"starintel:org:test"}); assertDocument(d);'
+      - name: Entity and relation assertions
         run: node --test --test-name-pattern='creates schema-valid' test/document.test.js
       - name: Schema.org JSON-LD metadata
         run: node --test --test-name-pattern='accepts strict Schema.org' test/document.test.js
