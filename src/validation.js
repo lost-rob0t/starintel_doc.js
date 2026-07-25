@@ -7,10 +7,24 @@ const { materializeSchema, verifyBundle } = require("./schema-bundle");
 let compiled = null;
 let schemaCache = null;
 
+function expandedSchema() {
+  const schema = materializeSchema();
+  const statusChange = schema.$defs?.statusChange;
+  if (statusChange) {
+    for (const variant of schema.allOf || []) {
+      const properties = variant.then?.properties?.data?.properties;
+      if (properties?.status_history) {
+        properties.status_history = { type: "array", items: statusChange };
+      }
+    }
+  }
+  return schema;
+}
+
 function loadSchema() {
   if (!schemaCache) {
     verifyBundle();
-    schemaCache = augmentSchema(materializeSchema());
+    schemaCache = augmentSchema(expandedSchema());
   }
   return schemaCache;
 }
