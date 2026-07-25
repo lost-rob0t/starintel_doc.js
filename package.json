@@ -17,8 +17,8 @@
     "LICENSE"
   ],
   "scripts": {
-    "test": "node --test test/document.test.js && node --test test/v09-conformance.test.js",
-    "check": "node --check src/index.js && node --check src/document.js && node --check src/schema-bundle.js && node --check src/schema-org.js && node --check src/validation.js && node --check scripts/sync-schema.mjs",
+    "test": "node scripts/test.mjs",
+    "check": "node --check src/index.js && node --check src/document.js && node --check src/schema-bundle.js && node --check src/schema-org.js && node --check src/validation.js && node --check scripts/sync-schema.mjs && node --check scripts/test.mjs",
     "check-schema": "node scripts/sync-schema.mjs --offline --check",
     "sync-schema": "node scripts/sync-schema.mjs",
     "prepack": "npm run check-schema && npm run check && npm test && test -s schema/starintel-doc-v0.9.0.schema.json && test -s schema/starintel-doc-v0.9.0.expansion.json && test -s schema/starintel-doc-v0.9.0.manifest.json"
