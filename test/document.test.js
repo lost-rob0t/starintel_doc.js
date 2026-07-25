@@ -2,11 +2,14 @@ const test = require("node:test");
 const assert = require("node:assert/strict");
 const {
   SCHEMA_VERSION,
+  SCHEMA_ORG_CONTEXT,
   CANONICAL_DTYPES,
+  DTYPE_SCHEMA_ORG_TYPES,
   canonicalDtype,
   createDocument,
   createRelation,
   normalizeDocument,
+  toSchemaOrg,
   validateDocument,
   assertDocument,
   dtypes
@@ -26,10 +29,14 @@ test("normalizes the canonical v0.9 envelope", () => {
   assert.equal(document.version, 1);
   assert.deepEqual(document.sources, []);
   assert.deepEqual(document.evidence, []);
+  assert.equal(document.schema_org["@context"], SCHEMA_ORG_CONTEXT);
+  assert.equal(document.schema_org["@type"], "Organization");
+  assert.equal(document.schema_org["@id"], document._id);
 });
 
 test("supports every canonical dtype and normalized delimiter alias", () => {
   assert.deepEqual(CANONICAL_DTYPES, dtypes);
+  assert.deepEqual(Object.keys(DTYPE_SCHEMA_ORG_TYPES).sort(), CANONICAL_DTYPES.slice().sort());
 
   for (const dtype of CANONICAL_DTYPES) {
     assert.equal(canonicalDtype(dtype), dtype);
@@ -77,6 +84,50 @@ test("creates schema-valid entity and relation documents", () => {
 
   assert.equal(assertDocument(organization)._id, organization._id);
   assert.equal(assertDocument(relation).data.predicate, "founded");
+  assert.equal(relation.schema_org["@type"], "Role");
+});
+
+test("accepts strict Schema.org JSON-LD metadata and exports it", () => {
+  const person = createDocument("person", {
+    _id: "starintel:person:example",
+    dataset: "test",
+    title: "Example Person",
+    aliases: ["E. Person"],
+    identifiers: [{
+      scheme: "wikidata",
+      value: "Q42",
+      url: "https://www.wikidata.org/wiki/Q42"
+    }],
+    schema_org: {
+      "@type": ["Person", "Thing"],
+      sameAs: ["https://example.test/person"],
+      additionalProperty: [{
+        "@type": "PropertyValue",
+        name: "source rank",
+        value: 1
+      }],
+      properties: { award: "Example Award" }
+    },
+    data: { full_name: "Example Person" }
+  });
+
+  assert.equal(assertDocument(person)._id, person._id);
+  const jsonld = toSchemaOrg(person);
+  assert.equal(jsonld.name, "Example Person");
+  assert.deepEqual(jsonld.sameAs, ["https://example.test/person"]);
+  assert.equal(jsonld.identifier[0].propertyID, "wikidata");
+});
+
+test("rejects undeclared direct Schema.org fields", () => {
+  const person = createDocument("person", {
+    _id: "starintel:person:bad-schema-org",
+    dataset: "test",
+    schema_org: { invented: true },
+    data: { full_name: "Bad Schema Org" }
+  });
+  const result = validateDocument(person, { normalize: false });
+  assert.equal(result.valid, false);
+  assert.ok(result.errors.some((error) => error.path.includes("schema_org")));
 });
 
 test("rejects unknown top-level and dtype-specific fields", () => {
