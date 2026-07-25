@@ -1,19 +1,77 @@
 const SCHEMA_VERSION = "0.9.0";
 
-const DTYPE_ALIASES = Object.freeze({
+const CANONICAL_DTYPES = Object.freeze([
+  "actor-manifest",
+  "address",
+  "alert",
+  "analysis",
+  "asset",
+  "breach",
+  "campaign-finance",
+  "claim",
+  "concept",
+  "contract",
+  "dataset-manifest",
+  "document",
+  "domain",
+  "education",
+  "email",
+  "email-message",
+  "employment",
+  "entity",
+  "event",
+  "evidence-record",
+  "file",
+  "financial-observation",
+  "geo",
+  "grant",
+  "host",
+  "investigation-target",
+  "legal-case",
+  "lobbying-filing",
+  "location",
+  "media",
+  "meeting",
+  "message",
+  "network",
+  "observation",
+  "org",
+  "ownership",
+  "person",
+  "phone",
+  "policy",
+  "procurement",
+  "product",
+  "relation",
+  "research-pass",
+  "social-media-post",
+  "source",
+  "target",
+  "task",
+  "url",
+  "user"
+]);
+
+const EXPANDED_DTYPE_ALIASES = Object.freeze({
   organization: "org",
   organisation: "org",
-  investigation_target: "investigation-target",
-  social_media_post: "social-media-post",
-  email_message: "email-message",
-  financial_observation: "financial-observation",
-  research_pass: "research-pass",
-  dataset_manifest: "dataset-manifest",
-  actor_manifest: "actor-manifest",
-  legal_case: "legal-case",
-  lobbying_filing: "lobbying-filing",
-  campaign_finance: "campaign-finance"
+  geolocation: "geo",
+  geographic_location: "geo",
+  email_address: "email",
+  electronic_mail: "email",
+  hostname: "host",
+  phone_number: "phone",
+  telephone: "phone",
+  telephone_number: "phone",
+  uniform_resource_locator: "url",
+  web_url: "url"
 });
+
+const DTYPE_ALIASES = Object.freeze(CANONICAL_DTYPES.reduce((aliases, dtype) => {
+  aliases[dtype] = dtype;
+  aliases[dtype.replaceAll("-", "_")] = dtype;
+  return aliases;
+}, { ...EXPANDED_DTYPE_ALIASES }));
 
 function clone(value) {
   return value == null ? value : JSON.parse(JSON.stringify(value));
@@ -23,8 +81,15 @@ function nowIso() {
   return new Date().toISOString();
 }
 
+function dtypeKey(dtype) {
+  return String(dtype || "document")
+    .trim()
+    .toLowerCase()
+    .replace(/[\s-]+/g, "_");
+}
+
 function canonicalDtype(dtype) {
-  const value = String(dtype || "document").trim();
+  const value = dtypeKey(dtype);
   return DTYPE_ALIASES[value] || value;
 }
 
@@ -128,6 +193,7 @@ function documentLabel(document) {
 
 module.exports = {
   SCHEMA_VERSION,
+  CANONICAL_DTYPES,
   DTYPE_ALIASES,
   canonicalDtype,
   makeDocumentId,
