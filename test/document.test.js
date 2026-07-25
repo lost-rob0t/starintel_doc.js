@@ -2,11 +2,14 @@ const test = require("node:test");
 const assert = require("node:assert/strict");
 const {
   SCHEMA_VERSION,
+  CANONICAL_DTYPES,
+  canonicalDtype,
   createDocument,
   createRelation,
   normalizeDocument,
   validateDocument,
-  assertDocument
+  assertDocument,
+  dtypes
 } = require("../src");
 
 test("normalizes the canonical v0.9 envelope", () => {
@@ -23,6 +26,38 @@ test("normalizes the canonical v0.9 envelope", () => {
   assert.equal(document.version, 1);
   assert.deepEqual(document.sources, []);
   assert.deepEqual(document.evidence, []);
+});
+
+test("supports every canonical dtype and normalized delimiter alias", () => {
+  assert.deepEqual(CANONICAL_DTYPES, dtypes);
+
+  for (const dtype of CANONICAL_DTYPES) {
+    assert.equal(canonicalDtype(dtype), dtype);
+    assert.equal(canonicalDtype(dtype.replaceAll("-", "_")), dtype);
+    assert.equal(canonicalDtype(dtype.replaceAll("-", " ")), dtype);
+  }
+});
+
+test("supports expanded names for abbreviated dtypes", () => {
+  const aliases = {
+    organization: "org",
+    organisation: "org",
+    geolocation: "geo",
+    geographic_location: "geo",
+    email_address: "email",
+    electronic_mail: "email",
+    hostname: "host",
+    phone_number: "phone",
+    telephone: "phone",
+    telephone_number: "phone",
+    uniform_resource_locator: "url",
+    web_url: "url"
+  };
+
+  for (const [alias, dtype] of Object.entries(aliases)) {
+    assert.equal(canonicalDtype(alias), dtype);
+    assert.equal(canonicalDtype(alias.replaceAll("_", " ").toUpperCase()), dtype);
+  }
 });
 
 test("creates schema-valid entity and relation documents", () => {
