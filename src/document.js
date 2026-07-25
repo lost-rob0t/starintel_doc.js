@@ -74,18 +74,29 @@ function createDocument(dtype, input = {}) {
 }
 
 function createRelation(input = {}) {
-  const subject = input.subject || input.source;
-  const object = input.object || input.target;
-  const predicate = input.predicate || input.relation_type || "related-to";
+  const {
+    subject: explicitSubject,
+    source,
+    object: explicitObject,
+    target,
+    predicate: explicitPredicate,
+    relation_type: relationType,
+    directed,
+    data = {},
+    ...envelope
+  } = input;
+  const subject = explicitSubject || source;
+  const object = explicitObject || target;
+  const predicate = explicitPredicate || relationType || "related-to";
   return createDocument("relation", {
-    ...input,
-    title: input.title || `${subject || "unknown"} ${predicate} ${object || "unknown"}`,
+    ...envelope,
+    title: envelope.title || `${subject || "unknown"} ${predicate} ${object || "unknown"}`,
     data: {
-      ...(input.data || {}),
+      ...data,
       subject,
       predicate,
       object,
-      directed: input.directed ?? true
+      directed: directed ?? true
     }
   });
 }
