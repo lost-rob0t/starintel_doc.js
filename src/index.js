@@ -1,21 +1,13 @@
-const Document = require('./documents').Document;
-const entities = require('./entities');
-const hosts = require('./hosts');
-const locations = require('./locations');
-const relations = require('./relations');
-const targets = require('./targets');
-const web = require('./web');
-const phones = require('./phones');
-const socialMedia = require('./social_media');
+const document = require("./document");
+const validation = require("./validation");
 
 module.exports = {
-  Document,
-  ...entities,
-  ...hosts,
-  ...locations,
-  ...relations,
-  ...targets,
-  ...web,
-  ...phones,
-  ...socialMedia
+  ...document,
+  ...validation,
+  get schema() {
+    return validation.loadSchema();
+  },
+  get dtypes() {
+    return validation.loadSchema().properties.dtype.enum.slice();
+  }
 };
