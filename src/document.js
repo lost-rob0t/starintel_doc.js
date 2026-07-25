@@ -1,3 +1,5 @@
+const { schemaOrgMetadata } = require("./schema-org");
+
 const SCHEMA_VERSION = "0.9.0";
 
 const CANONICAL_DTYPES = Object.freeze([
@@ -115,10 +117,14 @@ function normalizeDocument(input, options = {}) {
   const stamp = options.now || nowIso();
   const dtype = canonicalDtype(source.dtype || options.dtype || "document");
   const titleHint = source.title || source.data?.name || source.data?.full_name || source.data?.target;
+  const id = source._id || options.id || makeDocumentId(dtype, titleHint);
+  const explicitSchemaOrg = source.schema_org && typeof source.schema_org === "object" && !Array.isArray(source.schema_org)
+    ? source.schema_org
+    : {};
 
   return {
     ...source,
-    _id: source._id || options.id || makeDocumentId(dtype, titleHint),
+    _id: id,
     dataset: source.dataset || options.dataset || "default",
     dtype,
     schema_version: SCHEMA_VERSION,
@@ -127,6 +133,10 @@ function normalizeDocument(input, options = {}) {
     date_updated: source.date_updated || stamp,
     sources: Array.isArray(source.sources) ? source.sources : [],
     evidence: Array.isArray(source.evidence) ? source.evidence : [],
+    schema_org: {
+      ...schemaOrgMetadata(dtype, id),
+      ...explicitSchemaOrg
+    },
     data: source.data && typeof source.data === "object" && !Array.isArray(source.data) ? source.data : {},
     extensions: source.extensions && typeof source.extensions === "object" && !Array.isArray(source.extensions)
       ? source.extensions
