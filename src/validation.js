@@ -2,6 +2,7 @@ const path = require("node:path");
 const Ajv2020 = require("ajv/dist/2020");
 const addFormats = require("ajv-formats");
 const { normalizeDocument } = require("./document");
+const { augmentSchema } = require("./schema-org");
 
 const schemaPath = path.join(__dirname, "..", "schema", "starintel-doc-v0.9.0.schema.json");
 let compiled = null;
@@ -10,7 +11,7 @@ let schemaCache = null;
 function loadSchema() {
   if (!schemaCache) {
     try {
-      schemaCache = require(schemaPath);
+      schemaCache = augmentSchema(require(schemaPath));
     } catch (error) {
       error.message = `StarIntel v0.9 schema is missing. Run npm run sync-schema. ${error.message}`;
       throw error;
