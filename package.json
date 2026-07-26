@@ -1,16 +1,23 @@
 {
   "name": "starintel_doc",
-  "version": "0.2.0",
-  "description": "The Starintel document model for javascript",
+  "version": "0.9.0",
+  "description": "StarIntel v0.9.0 document parser, validator, and serializer for JavaScript",
   "main": "./src/index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+  "bin": {
+    "starintel-conformance": "./bin/starintel-conformance.js"
   },
-  "keywords": ["starintel", "osint"],
+  "scripts": {
+    "test": "node --test",
+    "conformance": "node ./bin/starintel-conformance.js"
+  },
+  "keywords": ["starintel", "osint", "json-schema", "conformance"],
   "author": "nsaspy",
   "license": "GPLv3",
   "dependencies": {
+    "ajv": "^8.17.1",
+    "ajv-formats": "^3.0.1",
     "dataclass": "^2.1.1",
+    "lossless-json": "^4.3.0",
     "md5": "^2.3.0",
     "ulid": "^2.3.0"
   },

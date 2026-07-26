@@ -1,0 +1,58 @@
+name: StarIntel conformance
+
+on:
+  pull_request:
+  push:
+    branches: [master]
+
+permissions:
+  contents: read
+
+jobs:
+  javascript:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Checkout pinned conformance source
+        uses: actions/checkout@v6
+        with:
+          repository: lost-rob0t/starintel-gpt-auto-dig
+          ref: 9f96fcf1852c65e100441c86c8a1c72843e760b8
+          path: conformance-source
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: "22"
+          cache: npm
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.13"
+
+      - name: Install and materialize lockfile
+        run: |
+          mkdir -p artifacts
+          npm install
+          cp package-lock.json artifacts/package-lock.json
+
+      - name: Run JavaScript tests
+        env:
+          STARINTEL_CONFORMANCE_ROOT: ${{ github.workspace }}/conformance-source
+        run: npm test
+
+      - name: Run JavaScript fixture suite
+        working-directory: conformance-source
+        run: |
+          python -m conformance.runner test \
+            --producer js \
+            --consumer js \
+            --adapter "js=node $GITHUB_WORKSPACE/bin/starintel-conformance.js"
+
+      - name: Upload generated lockfile
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: javascript-lockfile
+          path: artifacts/package-lock.json
+          if-no-files-found: error

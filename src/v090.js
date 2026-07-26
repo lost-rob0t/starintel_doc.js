@@ -1,0 +1,204 @@
+const fs = require("node:fs");
+const path = require("node:path");
+const Ajv2020 = require("ajv/dist/2020");
+const addFormats = require("ajv-formats");
+const {
+  isLosslessNumber,
+  parse: parseLosslessJson,
+  stringify: stringifyLosslessJson,
+} = require("lossless-json");
+
+const SPEC_VERSION = "0.9.0";
+const ADAPTER_VERSION = 1;
+const DTYPE_ALIASES = new Set([
+  "organization",
+  "organisation",
+  "investigation_target",
+  "social_media_post",
+  "email_message",
+  "financial_observation",
+  "research_pass",
+  "dataset_manifest",
+  "actor_manifest",
+  "legal_case",
+  "lobbying_filing",
+  "campaign_finance",
+]);
+
+function schemaPath() {
+  if (process.env.STARINTEL_SCHEMA) return process.env.STARINTEL_SCHEMA;
+  if (process.env.STARINTEL_CONFORMANCE_ROOT) {
+    return path.join(process.env.STARINTEL_CONFORMANCE_ROOT, "schemas", "starintel-doc-v0.9.0.schema.json");
+  }
+  return path.resolve(process.cwd(), "schemas", "starintel-doc-v0.9.0.schema.json");
+}
+
+function loadSchema() {
+  const target = schemaPath();
+  if (!fs.existsSync(target)) {
+    throw new Error(`StarIntel schema not found: ${target}`);
+  }
+  return JSON.parse(fs.readFileSync(target, "utf8"));
+}
+
+function validationValue(value) {
+  if (isLosslessNumber(value)) {
+    const number = Number(value.toString());
+    if (!Number.isFinite(number)) throw new Error(`number is outside JavaScript validation range: ${value.toString()}`);
+    return number;
+  }
+  if (Array.isArray(value)) return value.map(validationValue);
+  if (value && typeof value === "object") {
+    return Object.fromEntries(Object.entries(value).map(([key, item]) => [key, validationValue(item)]));
+  }
+  return value;
+}
+
+let cached;
+function runtime() {
+  if (cached) return cached;
+  const schema = loadSchema();
+  const ajv = new Ajv2020({ allErrors: true, strict: false, allowUnionTypes: true });
+  addFormats(ajv);
+  const validate = ajv.compile(schema);
+  const variants = new Map();
+  for (const branch of schema.allOf || []) {
+    const dtype = branch?.if?.properties?.dtype?.const;
+    const data = branch?.then?.properties?.data;
+    if (dtype && data) variants.set(dtype, data);
+  }
+  cached = { schema, validate, variants };
+  return cached;
+}
+
+function errorCategory(errors, document) {
+  if (typeof document?.dtype === "string") {
+    const known = runtime().variants.has(document.dtype);
+    if (!known && !DTYPE_ALIASES.has(document.dtype)) return "unknown_object_type";
+  }
+  const first = errors?.[0];
+  if (!first) return "validation_error";
+  switch (first.keyword) {
+    case "required": return "missing_required_field";
+    case "additionalProperties": return "undeclared_field";
+    case "format": return "invalid_datetime";
+    case "minimum": return "below_minimum";
+    case "maximum": return "above_maximum";
+    case "pattern": return "pattern_mismatch";
+    case "enum": return "invalid_enum";
+    case "const": return first.instancePath === "/schema_version" ? "unsupported_spec_version" : "invalid_constant";
+    case "type":
+    case "anyOf": return "wrong_type";
+    default: return "validation_error";
+  }
+}
+
+function validateDocument(document) {
+  if (!document || typeof document !== "object" || Array.isArray(document)) {
+    return { ok: false, error: "wrong_type", message: "$: expected object" };
+  }
+  if (document.schema_version !== SPEC_VERSION) {
+    return {
+      ok: false,
+      error: "unsupported_spec_version",
+      message: `$.schema_version: expected ${SPEC_VERSION}, got ${String(document.schema_version)}`,
+      unsupported: true,
+    };
+  }
+  const plain = validationValue(document);
+  const { validate } = runtime();
+  if (validate(plain)) return { ok: true };
+  return {
+    ok: false,
+    error: errorCategory(validate.errors, plain),
+    message: (validate.errors || []).map((item) => `${item.instancePath || "$"} ${item.message}`).join("; "),
+    details: validate.errors || [],
+  };
+}
+
+function roundtrip(document) {
+  const checked = validateDocument(document);
+  if (!checked.ok) return checked;
+  const encoded = stringifyLosslessJson(document);
+  const decoded = parseLosslessJson(encoded);
+  const rechecked = validateDocument(decoded);
+  if (!rechecked.ok) return rechecked;
+  return { ok: true, document: decoded, warnings: [] };
+}
+
+class Document {
+  constructor(value) {
+    const result = roundtrip(value);
+    if (!result.ok) {
+      const error = new Error(result.message);
+      error.category = result.error;
+      throw error;
+    }
+    this.value = result.document;
+  }
+
+  static fromJSON(value) {
+    return new Document(parseLosslessJson(value));
+  }
+
+  validate() {
+    const result = validateDocument(this.value);
+    if (!result.ok) {
+      const error = new Error(result.message);
+      error.category = result.error;
+      throw error;
+    }
+    return this;
+  }
+
+  toJSON() {
+    return stringifyLosslessJson(this.value);
+  }
+
+  toObject() {
+    return parseLosslessJson(this.toJSON());
+  }
+}
+
+function schemaInventory() {
+  const { variants } = runtime();
+  return [...variants.entries()].sort(([a], [b]) => a.localeCompare(b)).map(([objectType, data]) => {
+    const required = new Set(data.required || []);
+    const fields = {};
+    for (const [name, definition] of Object.entries(data.properties || {}).sort(([a], [b]) => a.localeCompare(b))) {
+      const item = { required: required.has(name) };
+      if (definition.type) item.type = definition.type;
+      if (definition.anyOf) item.any_of = definition.anyOf.map((candidate) => candidate.type || candidate.const || "any");
+      if (definition.enum) item.enum = definition.enum;
+      if (definition.format) item.format = definition.format;
+      fields[name] = item;
+    }
+    return { object_type: objectType, fields };
+  });
+}
+
+function capabilities() {
+  return {
+    language: "js",
+    adapter_version: ADAPTER_VERSION,
+    spec_versions: [SPEC_VERSION],
+    commands: ["validate", "normalize", "roundtrip", "version", "capabilities", "schema-inventory"],
+    object_types: [...runtime().variants.keys()].sort(),
+    preserves_unknown_extensions: true,
+    preserves_missing_optional_fields: true,
+    preserves_number_lexemes: true,
+  };
+}
+
+module.exports = {
+  SPEC_VERSION,
+  ADAPTER_VERSION,
+  Document,
+  capabilities,
+  loadSchema,
+  parseLosslessJson,
+  roundtrip,
+  schemaInventory,
+  stringifyLosslessJson,
+  validateDocument,
+};
