@@ -1,7 +1,12 @@
 const test = require("node:test");
 const assert = require("node:assert/strict");
 
-const { SPEC_VERSION, roundtrip, validateDocument } = require("../src/v090");
+const {
+  SPEC_VERSION,
+  roundtrip,
+  stringifyLosslessJson,
+  validateDocument,
+} = require("../src/v090");
 
 function document() {
   return {
@@ -35,7 +40,7 @@ test("valid v0.9 documents roundtrip", () => {
   const value = document();
   const result = roundtrip(value);
   assert.equal(result.ok, true);
-  assert.deepEqual(result.document, value);
+  assert.equal(stringifyLosslessJson(result.document), stringifyLosslessJson(value));
 });
 
 test("missing required fields are rejected", () => {
