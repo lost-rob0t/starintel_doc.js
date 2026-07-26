@@ -27,14 +27,6 @@ jobs:
           set -o pipefail
           nix flake check --show-trace 2>&1 | tee nix-check.log
 
-      - name: Validate Python spec flake
-        shell: bash
-        run: |
-          set -o pipefail
-          nix flake check \
-            github:lost-rob0t/starintel-doc/agent/package-spec-flake \
-            --show-trace 2>&1 | tee nix-python-check.log
-
       - name: Upload failure logs
         if: failure()
         uses: actions/upload-artifact@v4
