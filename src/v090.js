@@ -2,6 +2,11 @@ const fs = require("node:fs");
 const path = require("node:path");
 const Ajv2020 = require("ajv/dist/2020");
 const addFormats = require("ajv-formats");
+const {
+  isLosslessNumber,
+  parse: parseLosslessJson,
+  stringify: stringifyLosslessJson,
+} = require("lossless-json");
 
 const SPEC_VERSION = "0.9.0";
 const ADAPTER_VERSION = 1;
@@ -34,6 +39,19 @@ function loadSchema() {
     throw new Error(`StarIntel schema not found: ${target}`);
   }
   return JSON.parse(fs.readFileSync(target, "utf8"));
+}
+
+function validationValue(value) {
+  if (isLosslessNumber(value)) {
+    const number = Number(value.toString());
+    if (!Number.isFinite(number)) throw new Error(`number is outside JavaScript validation range: ${value.toString()}`);
+    return number;
+  }
+  if (Array.isArray(value)) return value.map(validationValue);
+  if (value && typeof value === "object") {
+    return Object.fromEntries(Object.entries(value).map(([key, item]) => [key, validationValue(item)]));
+  }
+  return value;
 }
 
 let cached;
@@ -69,7 +87,8 @@ function errorCategory(errors, document) {
     case "pattern": return "pattern_mismatch";
     case "enum": return "invalid_enum";
     case "const": return first.instancePath === "/schema_version" ? "unsupported_spec_version" : "invalid_constant";
-    case "type": return "wrong_type";
+    case "type":
+    case "anyOf": return "wrong_type";
     default: return "validation_error";
   }
 }
@@ -86,11 +105,12 @@ function validateDocument(document) {
       unsupported: true,
     };
   }
+  const plain = validationValue(document);
   const { validate } = runtime();
-  if (validate(document)) return { ok: true };
+  if (validate(plain)) return { ok: true };
   return {
     ok: false,
-    error: errorCategory(validate.errors, document),
+    error: errorCategory(validate.errors, plain),
     message: (validate.errors || []).map((item) => `${item.instancePath || "$"} ${item.message}`).join("; "),
     details: validate.errors || [],
   };
@@ -99,8 +119,8 @@ function validateDocument(document) {
 function roundtrip(document) {
   const checked = validateDocument(document);
   if (!checked.ok) return checked;
-  const encoded = JSON.stringify(document);
-  const decoded = JSON.parse(encoded);
+  const encoded = stringifyLosslessJson(document);
+  const decoded = parseLosslessJson(encoded);
   const rechecked = validateDocument(decoded);
   if (!rechecked.ok) return rechecked;
   return { ok: true, document: decoded, warnings: [] };
@@ -132,6 +152,7 @@ function capabilities() {
     object_types: [...runtime().variants.keys()].sort(),
     preserves_unknown_extensions: true,
     preserves_missing_optional_fields: true,
+    preserves_number_lexemes: true,
   };
 }
 
@@ -139,7 +160,9 @@ module.exports = {
   SPEC_VERSION,
   ADAPTER_VERSION,
   capabilities,
-  schemaInventory,
-  validateDocument,
+  parseLosslessJson,
   roundtrip,
+  schemaInventory,
+  stringifyLosslessJson,
+  validateDocument,
 };
