@@ -1,21 +1,18 @@
-const Document = require('./documents').Document;
-const entities = require('./entities');
-const hosts = require('./hosts');
-const locations = require('./locations');
-const relations = require('./relations');
-const targets = require('./targets');
-const web = require('./web');
-const phones = require('./phones');
-const socialMedia = require('./social_media');
+const v090 = require("./v090");
+
+const legacy = {
+  Document: require("./documents").Document,
+  ...require("./entities"),
+  ...require("./hosts"),
+  ...require("./locations"),
+  ...require("./relations"),
+  ...require("./targets"),
+  ...require("./web"),
+  ...require("./phones"),
+  ...require("./social_media"),
+};
 
 module.exports = {
-  Document,
-  ...entities,
-  ...hosts,
-  ...locations,
-  ...relations,
-  ...targets,
-  ...web,
-  ...phones,
-  ...socialMedia
+  ...v090,
+  legacy,
 };
