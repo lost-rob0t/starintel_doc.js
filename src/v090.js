@@ -126,6 +126,40 @@ function roundtrip(document) {
   return { ok: true, document: decoded, warnings: [] };
 }
 
+class Document {
+  constructor(value) {
+    const result = roundtrip(value);
+    if (!result.ok) {
+      const error = new Error(result.message);
+      error.category = result.error;
+      throw error;
+    }
+    this.value = result.document;
+  }
+
+  static fromJSON(value) {
+    return new Document(parseLosslessJson(value));
+  }
+
+  validate() {
+    const result = validateDocument(this.value);
+    if (!result.ok) {
+      const error = new Error(result.message);
+      error.category = result.error;
+      throw error;
+    }
+    return this;
+  }
+
+  toJSON() {
+    return stringifyLosslessJson(this.value);
+  }
+
+  toObject() {
+    return parseLosslessJson(this.toJSON());
+  }
+}
+
 function schemaInventory() {
   const { variants } = runtime();
   return [...variants.entries()].sort(([a], [b]) => a.localeCompare(b)).map(([objectType, data]) => {
@@ -159,7 +193,9 @@ function capabilities() {
 module.exports = {
   SPEC_VERSION,
   ADAPTER_VERSION,
+  Document,
   capabilities,
+  loadSchema,
   parseLosslessJson,
   roundtrip,
   schemaInventory,
