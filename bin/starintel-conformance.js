@@ -5,19 +5,21 @@ const {
   SPEC_VERSION,
   ADAPTER_VERSION,
   capabilities,
-  schemaInventory,
-  validateDocument,
+  parseLosslessJson,
   roundtrip,
+  schemaInventory,
+  stringifyLosslessJson,
+  validateDocument,
 } = require("../src/v090");
 
 function emit(value) {
-  process.stdout.write(`${JSON.stringify(value)}\n`);
+  process.stdout.write(`${stringifyLosslessJson(value)}\n`);
 }
 
 function main() {
   let request;
   try {
-    request = JSON.parse(fs.readFileSync(0, "utf8"));
+    request = parseLosslessJson(fs.readFileSync(0, "utf8"));
   } catch (error) {
     console.error(`javascript adapter failure: ${error.message}`);
     emit({ ok: false, error: "adapter_failure", message: error.message });
@@ -47,12 +49,7 @@ function main() {
       emit(result.ok ? { ok: true, spec_version: SPEC_VERSION, warnings: [] } : result);
       return result.ok ? 0 : result.unsupported ? 3 : 1;
     }
-    if (command === "normalize") {
-      const result = roundtrip(request.document);
-      emit(result.ok ? { ok: true, spec_version: SPEC_VERSION, document: result.document, warnings: [] } : result);
-      return result.ok ? 0 : result.unsupported ? 3 : 1;
-    }
-    if (command === "roundtrip") {
+    if (command === "normalize" || command === "roundtrip") {
       const result = roundtrip(request.document);
       emit(result.ok ? { ok: true, spec_version: SPEC_VERSION, document: result.document, warnings: [] } : result);
       return result.ok ? 0 : result.unsupported ? 3 : 1;
