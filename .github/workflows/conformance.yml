@@ -30,7 +30,11 @@ jobs:
         with:
           python-version: "3.13"
 
-      - run: npm install
+      - name: Install and materialize lockfile
+        run: |
+          mkdir -p artifacts
+          npm install
+          cp package-lock.json artifacts/package-lock.json
 
       - name: Run JavaScript tests
         env:
@@ -44,3 +48,11 @@ jobs:
             --producer js \
             --consumer js \
             --adapter "js=node $GITHUB_WORKSPACE/bin/starintel-conformance.js"
+
+      - name: Upload generated lockfile
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: javascript-lockfile
+          path: artifacts/package-lock.json
+          if-no-files-found: error
