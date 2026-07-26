@@ -1,7 +1,7 @@
 {
   description = "StarIntel v0.9.0 document specification for JavaScript";
 
-  inputs.nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
+  inputs.nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
 
   outputs = { self, nixpkgs }:
     let
@@ -24,7 +24,10 @@
           buildPhase = ''
             runHook preBuild
 
-            mkdir -p dist
+            export HOME="$TMPDIR"
+            export npm_config_cache="$TMPDIR/npm-cache"
+
+            mkdir -p dist "$npm_config_cache"
             npm pack --ignore-scripts --pack-destination dist
 
             runHook postBuild
