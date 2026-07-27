@@ -3,9 +3,11 @@ import { mkdir, readFile, rename, writeFile } from "node:fs/promises";
 import { resolve } from "node:path";
 import process from "node:process";
 
-const repository = process.env.STARINTEL_SCHEMA_REPOSITORY || "lost-rob0t/starintel-gpt-auto-dig";
-const baseSchemaRef = process.env.STARINTEL_BASE_SCHEMA_REF || "agent/research-node-spec";
-const expansionRef = process.env.STARINTEL_EXPANSION_REF || "agent/starintel-v0.9-field-expansion";
+const lock = JSON.parse(await readFile(resolve("schema", "starintel-schema.lock.json"), "utf8"));
+const repository = process.env.STARINTEL_SCHEMA_REPOSITORY || lock.canonical_repository;
+const canonicalRef = process.env.STARINTEL_SCHEMA_REF || lock.canonical_commit;
+const baseSchemaRef = process.env.STARINTEL_BASE_SCHEMA_REF || canonicalRef;
+const expansionRef = process.env.STARINTEL_EXPANSION_REF || canonicalRef;
 const offline = process.argv.includes("--offline");
 const check = process.argv.includes("--check");
 const schemaRevision = "0.9.0+fields.20260726.2";
