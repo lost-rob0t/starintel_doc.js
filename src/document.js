@@ -51,6 +51,7 @@ const CANONICAL_DTYPES = Object.freeze([
   "procurement",
   "product",
   "relation",
+  "research-node",
   "research-pass",
   "social-media-post",
   "source",
