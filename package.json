@@ -1,20 +1,52 @@
 {
   "name": "starintel_doc",
   "version": "0.9.0",
-  "description": "StarIntel v0.9.0 document parser, validator, and serializer for JavaScript",
+  "description": "Canonical JavaScript runtime, conformance adapter, and browser validator for StarIntel v0.9.0",
   "main": "./src/index.js",
+  "browser": "./src/index.js",
   "bin": {
     "starintel-conformance": "./bin/starintel-conformance.js"
   },
-  "scripts": {
-    "test": "node --test",
-    "conformance": "node ./bin/starintel-conformance.js"
+  "exports": {
+    ".": "./src/index.js",
+    "./conformance": "./src/v090.js",
+    "./schema": "./schema/starintel-doc-v0.9.0.schema.json",
+    "./schema/expansion": "./schema/starintel-doc-v0.9.0.expansion.json",
+    "./schema/manifest": "./schema/starintel-doc-v0.9.0.manifest.json"
   },
-  "keywords": ["starintel", "osint", "json-schema", "conformance"],
+  "files": [
+    "bin",
+    "src",
+    "schema",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "test": "node scripts/test.mjs",
+    "conformance": "node ./bin/starintel-conformance.js",
+    "check": "node --check src/index.js && node --check src/v090.js && node --check src/document.js && node --check src/schema-bundle.js && node --check src/schema-org.js && node --check src/validation.js && node --check scripts/sync-schema.mjs && node --check scripts/test.mjs",
+    "check-schema": "node scripts/sync-schema.mjs --offline --check",
+    "sync-schema": "node scripts/sync-schema.mjs",
+    "prepack": "npm run check-schema && npm run check && npm test && test -s schema/starintel-doc-v0.9.0.schema.json && test -s schema/starintel-doc-v0.9.0.expansion.json && test -s schema/starintel-doc-v0.9.0.manifest.json"
+  },
+  "keywords": [
+    "starintel",
+    "osint",
+    "json-schema",
+    "json-ld",
+    "schema.org",
+    "conformance",
+    "validation",
+    "pouchdb",
+    "couchdb"
+  ],
   "author": "nsaspy",
   "license": "GPLv3",
+  "engines": {
+    "node": ">=20"
+  },
   "dependencies": {
-    "ajv": "^8.17.1",
+    "ajv": "^8.20.0",
     "ajv-formats": "^3.0.1",
     "dataclass": "^2.1.1",
     "lossless-json": "^4.3.0",
