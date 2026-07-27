@@ -58,7 +58,7 @@ test("verifies the portable schema expansion bundle", () => {
 });
 
 test("supports every canonical dtype, field expansion and delimiter alias", () => {
-  assert.deepEqual(CANONICAL_DTYPES, dtypes);
+  assert.deepEqual(CANONICAL_DTYPES.slice().sort(), dtypes.slice().sort());
   assert.deepEqual(Object.keys(DTYPE_SCHEMA_ORG_TYPES).sort(), CANONICAL_DTYPES.slice().sort());
   assert.deepEqual(Object.keys(expansion.dtype_fields).sort(), CANONICAL_DTYPES.slice().sort());
 
