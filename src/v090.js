@@ -18,6 +18,7 @@ const DTYPE_ALIASES = new Set([
   "email_message",
   "financial_observation",
   "research_pass",
+  "research_node",
   "dataset_manifest",
   "actor_manifest",
   "legal_case",
