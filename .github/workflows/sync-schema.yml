@@ -1,0 +1,52 @@
+name: Sync canonical schema bundle
+
+on:
+  push:
+    branches:
+      - master
+      - "agent/**"
+    paths:
+      - "scripts/sync-schema.mjs"
+      - ".github/workflows/sync-schema.yml"
+      - "schema/**"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: starintel-schema-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: ${{ github.ref_name }}
+          fetch-depth: 0
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 22
+      - name: Synchronize canonical v0.9 bundle
+        run: node scripts/sync-schema.mjs
+      - name: Verify synchronized bundle
+        run: node scripts/sync-schema.mjs --offline --check
+      - name: Commit schema bundle update
+        shell: bash
+        run: |
+          set -euo pipefail
+          git add \
+            schema/starintel-doc-v0.9.0.schema.json \
+            schema/starintel-doc-v0.9.0.expansion.json \
+            schema/starintel-doc-v0.9.0.manifest.json
+          if git diff --cached --quiet; then
+            echo "Schema bundle already current"
+            exit 0
+          fi
+          git config user.name "starintel-schema-bot"
+          git config user.email "starintel-schema-bot@users.noreply.github.com"
+          git commit -m "Sync canonical StarIntel v0.9 schema bundle"
+          git push origin "HEAD:${GITHUB_REF_NAME}"

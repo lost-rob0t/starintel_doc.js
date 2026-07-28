@@ -1,0 +1,59 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - master
+      - "agent/**"
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 22
+      - run: npm install
+      - run: npm run sync-schema
+      - run: npm run check-schema
+      - run: npm run check
+      - name: Envelope normalization
+        run: node --test --test-name-pattern='normalizes the canonical' test/document.test.js
+      - name: Canonical dtype coverage
+        run: node --test --test-name-pattern='supports every canonical' test/document.test.js
+      - name: Expanded dtype aliases
+        run: node --test --test-name-pattern='supports expanded names' test/document.test.js
+      - name: Organization validation
+        run: node -e 'const {createDocument,assertDocument}=require("./src"); const d=createDocument("org",{_id:"starintel:org:test",dataset:"test",title:"Test Org",data:{name:"Test Org",org_type:"company"}}); assertDocument(d);'
+      - name: Relation validation
+        run: node -e 'const {createRelation,assertDocument}=require("./src"); const d=createRelation({_id:"starintel:relation:test-founded",dataset:"test",subject:"starintel:person:test",predicate:"founded",object:"starintel:org:test"}); assertDocument(d);'
+      - name: Entity and relation assertions
+        run: node --test --test-name-pattern='creates schema-valid' test/document.test.js
+      - name: Schema.org JSON-LD metadata
+        run: node --test --test-name-pattern='accepts strict Schema.org' test/document.test.js
+      - name: Schema.org strict fields
+        run: node --test --test-name-pattern='rejects undeclared direct Schema.org' test/document.test.js
+      - name: Strict unknown fields
+        run: node --test --test-name-pattern='rejects unknown top-level' test/document.test.js
+      - name: Bundle hash verification
+        run: node --test --test-name-pattern='schema expansion manifest verifies' test/v09-conformance.test.js
+      - name: Additive dtype field coverage
+        run: node --test --test-name-pattern='all dtypes expose additive fields' test/v09-conformance.test.js
+      - name: Revisioned required fields
+        run: node --test --test-name-pattern='normalized documents carry revisioned required fields' test/v09-conformance.test.js
+      - name: Expanded metadata validation
+        run: node --test --test-name-pattern='expanded dtype metadata validates' test/v09-conformance.test.js
+      - name: Stable document IDs
+        run: node --test --test-name-pattern='stable ids are deterministic' test/v09-conformance.test.js
+      - name: Full Node test discovery
+        run: npm test
+      - name: Package artifacts exist
+        run: test -s schema/starintel-doc-v0.9.0.schema.json && test -s schema/starintel-doc-v0.9.0.expansion.json && test -s schema/starintel-doc-v0.9.0.manifest.json
+      - name: Package dry run
+        run: npm pack --dry-run --ignore-scripts
