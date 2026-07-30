@@ -41,7 +41,7 @@
     "couchdb"
   ],
   "author": "nsaspy",
-  "license": "GPLv3",
+  "license": "AGPL-3.0-only",
   "engines": {
     "node": ">=20"
   },
