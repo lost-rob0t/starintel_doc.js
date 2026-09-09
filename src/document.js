@@ -8,58 +8,11 @@ const SCHEMA_PROFILE = manifest.profile;
 const SCHEMA_PROFILE_VERSION = manifest.profile_version;
 const SCHEMA_URI = baseSchema.$id;
 
-const CANONICAL_DTYPES = Object.freeze([
-  "actor-manifest",
-  "address",
-  "alert",
-  "analysis",
-  "asset",
-  "breach",
-  "campaign-finance",
-  "claim",
-  "concept",
-  "contract",
-  "dataset-manifest",
-  "document",
-  "domain",
-  "education",
-  "email",
-  "email-message",
-  "employment",
-  "entity",
-  "event",
-  "evidence-record",
-  "file",
-  "financial-observation",
-  "geo",
-  "grant",
-  "host",
-  "investigation-target",
-  "legal-case",
-  "lobbying-filing",
-  "location",
-  "media",
-  "meeting",
-  "message",
-  "network",
-  "observation",
-  "org",
-  "ownership",
-  "person",
-  "phone",
-  "policy",
-  "procurement",
-  "product",
-  "relation",
-  "research-node",
-  "research-pass",
-  "social-media-post",
-  "source",
-  "target",
-  "task",
-  "url",
-  "user"
-]);
+const schemaDtypes = baseSchema?.properties?.dtype?.enum;
+if (!Array.isArray(schemaDtypes) || schemaDtypes.length === 0) {
+  throw new Error("StarIntel schema bundle does not expose canonical dtype enum");
+}
+const CANONICAL_DTYPES = Object.freeze([...schemaDtypes]);
 
 const EXPANDED_DTYPE_ALIASES = Object.freeze({
   organization: "org",
