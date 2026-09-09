@@ -12,7 +12,8 @@ const tests = [
   ["test/v09-conformance.test.js", "all dtypes expose additive fields"],
   ["test/v09-conformance.test.js", "normalized documents carry revisioned required fields"],
   ["test/v09-conformance.test.js", "expanded dtype metadata validates"],
-  ["test/v09-conformance.test.js", "stable ids are deterministic"]
+  ["test/v09-conformance.test.js", "stable ids are deterministic"],
+  ["test/operation-091.test.js", "supports operation in the 0.9.1 release"]
 ];
 
 for (const [file, pattern] of tests) {
