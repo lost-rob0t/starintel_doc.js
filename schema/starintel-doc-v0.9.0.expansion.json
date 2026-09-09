@@ -417,6 +417,20 @@
       "evidence_record_ids",
       "uncertainty"
     ],
+    "operation": [
+      "mission",
+      "objectives",
+      "status",
+      "in_scope",
+      "out_of_scope",
+      "target_policy",
+      "targets",
+      "phases",
+      "datasets",
+      "capability_gaps",
+      "assignments",
+      "post_actions"
+    ],
     "org": [
       "legal_form",
       "incorporated_at",
@@ -781,7 +795,7 @@
     "tombstone_of"
   ],
   "profile": "starintel-core",
-  "profile_version": "0.9",
+  "profile_version": "0.9.1",
   "provenance_fields": [
     "activity_id",
     "agent_ids",
