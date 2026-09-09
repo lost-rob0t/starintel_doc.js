@@ -807,7 +807,7 @@
     "plan_id",
     "action_records"
   ],
-  "schema_revision": "0.9.0+fields.20260726.2",
+  "schema_revision": "0.9.0+fields.20260909.1",
   "schema_version": "0.9.0",
   "top_level_fields": [
     "schema_revision",
