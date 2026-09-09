@@ -35,6 +35,7 @@ const DTYPE_SCHEMA_ORG_TYPES = Object.freeze({
   message: ["Message"],
   network: ["Thing"],
   observation: ["CreativeWork"],
+  operation: ["Action"],
   org: ["Organization"],
   ownership: ["Role"],
   person: ["Person"],
