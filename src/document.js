@@ -1,6 +1,6 @@
 const { createHash, randomUUID } = require("node:crypto");
 const { schemaOrgMetadata } = require("./schema-org");
-const { baseSchema, manifest } = require("./schema-bundle");
+const { baseSchema, expansion, manifest } = require("./schema-bundle");
 
 const SCHEMA_VERSION = manifest.schema_version;
 const SCHEMA_REVISION = manifest.schema_revision;
@@ -8,58 +8,11 @@ const SCHEMA_PROFILE = manifest.profile;
 const SCHEMA_PROFILE_VERSION = manifest.profile_version;
 const SCHEMA_URI = baseSchema.$id;
 
-const CANONICAL_DTYPES = Object.freeze([
-  "actor-manifest",
-  "address",
-  "alert",
-  "analysis",
-  "asset",
-  "breach",
-  "campaign-finance",
-  "claim",
-  "concept",
-  "contract",
-  "dataset-manifest",
-  "document",
-  "domain",
-  "education",
-  "email",
-  "email-message",
-  "employment",
-  "entity",
-  "event",
-  "evidence-record",
-  "file",
-  "financial-observation",
-  "geo",
-  "grant",
-  "host",
-  "investigation-target",
-  "legal-case",
-  "lobbying-filing",
-  "location",
-  "media",
-  "meeting",
-  "message",
-  "network",
-  "observation",
-  "org",
-  "ownership",
-  "person",
-  "phone",
-  "policy",
-  "procurement",
-  "product",
-  "relation",
-  "research-node",
-  "research-pass",
-  "social-media-post",
-  "source",
-  "target",
-  "task",
-  "url",
-  "user"
-]);
+const schemaDtypes = Object.keys(expansion?.dtype_fields || {});
+if (schemaDtypes.length === 0) {
+  throw new Error("StarIntel expansion bundle does not expose canonical dtype inventory");
+}
+const CANONICAL_DTYPES = Object.freeze(schemaDtypes);
 
 const EXPANDED_DTYPE_ALIASES = Object.freeze({
   organization: "org",
