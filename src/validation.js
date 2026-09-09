@@ -2,13 +2,21 @@ const Ajv2020 = require("ajv/dist/2020");
 const addFormats = require("ajv-formats");
 const { normalizeDocument } = require("./document");
 const { augmentSchema } = require("./schema-org");
-const { materializeSchema, verifyBundle } = require("./schema-bundle");
+const { materializeSchema, verifyBundle, expansion } = require("./schema-bundle");
 
 let compiled = null;
 let schemaCache = null;
 
 function expandedSchema() {
   const schema = materializeSchema();
+  // The v0.9 base schema remains stable while additive release-profile dtypes
+  // live in the expansion registry. Validation must therefore project the
+  // release inventory into the effective schema rather than using the base
+  // enum as the final authority.
+  schema.properties.dtype = {
+    ...(schema.properties.dtype || {}),
+    enum: Object.keys(expansion.dtype_fields).sort()
+  };
   const statusChange = schema.$defs?.statusChange;
   if (statusChange) {
     for (const variant of schema.allOf || []) {
