@@ -1,6 +1,6 @@
 const { createHash, randomUUID } = require("node:crypto");
 const { schemaOrgMetadata } = require("./schema-org");
-const { baseSchema, manifest } = require("./schema-bundle");
+const { baseSchema, expansion, manifest } = require("./schema-bundle");
 
 const SCHEMA_VERSION = manifest.schema_version;
 const SCHEMA_REVISION = manifest.schema_revision;
@@ -8,11 +8,11 @@ const SCHEMA_PROFILE = manifest.profile;
 const SCHEMA_PROFILE_VERSION = manifest.profile_version;
 const SCHEMA_URI = baseSchema.$id;
 
-const schemaDtypes = baseSchema?.properties?.dtype?.enum;
-if (!Array.isArray(schemaDtypes) || schemaDtypes.length === 0) {
-  throw new Error("StarIntel schema bundle does not expose canonical dtype enum");
+const schemaDtypes = Object.keys(expansion?.dtype_fields || {});
+if (schemaDtypes.length === 0) {
+  throw new Error("StarIntel expansion bundle does not expose canonical dtype inventory");
 }
-const CANONICAL_DTYPES = Object.freeze([...schemaDtypes]);
+const CANONICAL_DTYPES = Object.freeze(schemaDtypes);
 
 const EXPANDED_DTYPE_ALIASES = Object.freeze({
   organization: "org",
