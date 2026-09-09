@@ -1,7 +1,7 @@
 {
   "name": "starintel_doc",
-  "version": "0.9.0",
-  "description": "Canonical JavaScript runtime, conformance adapter, and browser validator for StarIntel v0.9.0",
+  "version": "0.9.1",
+  "description": "Canonical JavaScript runtime, conformance adapter, and browser validator for the StarIntel 0.9.1 operation-compatible release",
   "main": "./src/index.js",
   "browser": "./src/index.js",
   "bin": {
