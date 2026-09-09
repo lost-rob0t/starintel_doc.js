@@ -1,0 +1,47 @@
+name: Operation 0.9.1 materialization fix
+
+on:
+  push:
+    branches: [feat/operation-091]
+
+permissions:
+  contents: write
+
+jobs:
+  fix:
+    if: ${{ !contains(github.event.head_commit.message, '[operation-091-fix]') }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: feat/operation-091
+      - name: Derive materialized dtype enum from expansion registry
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          path = Path('src/schema-bundle.js')
+          text = path.read_text()
+          needle = '  output.properties ||= {};\n\n  const topLevelSchemas = {'
+          replacement = '''  output.properties ||= {};
+  // The v0.9 base schema is intentionally stable. Revisioned/additive dtypes
+  // live in the expansion registry, so materialization must project that
+  // inventory into the effective validator schema.
+  output.properties.dtype = {
+    ...(output.properties.dtype || {}),
+    enum: Object.keys(registry.dtype_fields).sort()
+  };
+
+  const topLevelSchemas = {'''
+          if needle not in text:
+              raise SystemExit('materializeSchema insertion point not found')
+          text = text.replace(needle, replacement, 1)
+          path.write_text(text)
+          PY
+      - name: Commit fix
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add src/schema-bundle.js
+          git commit -m "fix(schema): materialize additive dtype inventory [operation-091-fix]"
+          git push origin HEAD:feat/operation-091
