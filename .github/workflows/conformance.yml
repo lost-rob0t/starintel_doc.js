@@ -3,10 +3,10 @@ name: StarIntel conformance
 on:
   pull_request:
   push:
-    branches: [master, feat/operation-091]
+    branches: [master]
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
   javascript:
@@ -52,17 +52,8 @@ jobs:
           npm run sync-schema
           npm run check-schema
 
-      - name: Persist synchronized schema on release branch
-        if: github.event_name == 'push' && github.ref == 'refs/heads/feat/operation-091'
-        run: |
-          if git diff --quiet -- schema/starintel-doc-v0.9.0.schema.json schema/starintel-doc-v0.9.0.expansion.json schema/starintel-doc-v0.9.0.manifest.json; then
-            exit 0
-          fi
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add schema/starintel-doc-v0.9.0.schema.json schema/starintel-doc-v0.9.0.expansion.json schema/starintel-doc-v0.9.0.manifest.json
-          git commit -m "chore(schema): sync canonical operation 0.9.1 bundle [schema-sync]"
-          git push origin HEAD:feat/operation-091
+      - name: Require clean canonical bundle
+        run: git diff --exit-code -- schema/starintel-doc-v0.9.0.schema.json schema/starintel-doc-v0.9.0.expansion.json schema/starintel-doc-v0.9.0.manifest.json
 
       - name: Run JavaScript tests
         env:
