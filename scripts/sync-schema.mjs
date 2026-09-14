@@ -67,7 +67,12 @@ async function fetchFile(name, ref) {
   const url = `https://raw.githubusercontent.com/${repository}/${ref}/schemas/${name}`;
   const response = await fetch(url, { headers: { accept: "application/json" } });
   if (!response.ok) throw new Error(`failed to fetch ${name} from ${ref}: ${response.status} ${response.statusText}`);
-  return `${JSON.stringify(await response.json(), null, 2)}\n`;
+
+  // Preserve the canonical artifact text exactly. Parsing and reserializing here
+  // changes valid JSON lexical forms (for example 1.0 -> 1), which means a
+  // consumer can be semantically equivalent while no longer shipping the
+  // canonical release artifact byte-for-byte.
+  return response.text();
 }
 
 async function localPayloads() {
