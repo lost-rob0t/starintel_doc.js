@@ -242,8 +242,8 @@
                 "type": "array"
               },
               "confidence": {
-                "maximum": 1,
-                "minimum": 0,
+                "maximum": 1.0,
+                "minimum": 0.0,
                 "type": "number"
               },
               "counterarguments": {
@@ -368,8 +368,8 @@
                       "type": "boolean"
                     },
                     "confidence": {
-                      "maximum": 1,
-                      "minimum": 0,
+                      "maximum": 1.0,
+                      "minimum": 0.0,
                       "type": "number"
                     },
                     "issuer": {
@@ -698,8 +698,8 @@
                 "type": "string"
               },
               "certainty": {
-                "maximum": 1,
-                "minimum": 0,
+                "maximum": 1.0,
+                "minimum": 0.0,
                 "type": "number"
               },
               "claim": {
@@ -1559,8 +1559,8 @@
                       "type": "boolean"
                     },
                     "confidence": {
-                      "maximum": 1,
-                      "minimum": 0,
+                      "maximum": 1.0,
+                      "minimum": 0.0,
                       "type": "number"
                     },
                     "issuer": {
@@ -1827,8 +1827,8 @@
                 ]
               },
               "confidence": {
-                "maximum": 1,
-                "minimum": 0,
+                "maximum": 1.0,
+                "minimum": 0.0,
                 "type": "number"
               },
               "content_hash": {
@@ -3967,8 +3967,8 @@
                       "type": "boolean"
                     },
                     "confidence": {
-                      "maximum": 1,
-                      "minimum": 0,
+                      "maximum": 1.0,
+                      "minimum": 0.0,
                       "type": "number"
                     },
                     "issuer": {
@@ -4342,8 +4342,8 @@
                       "type": "boolean"
                     },
                     "confidence": {
-                      "maximum": 1,
-                      "minimum": 0,
+                      "maximum": 1.0,
+                      "minimum": 0.0,
                       "type": "number"
                     },
                     "issuer": {
@@ -4910,8 +4910,8 @@
                       "type": "boolean"
                     },
                     "confidence": {
-                      "maximum": 1,
-                      "minimum": 0,
+                      "maximum": 1.0,
+                      "minimum": 0.0,
                       "type": "number"
                     },
                     "issuer": {
@@ -5085,8 +5085,8 @@
                 "type": "boolean"
               },
               "confidence": {
-                "maximum": 1,
-                "minimum": 0,
+                "maximum": 1.0,
+                "minimum": 0.0,
                 "type": "number"
               },
               "directed": {
@@ -5143,8 +5143,8 @@
                               "type": "boolean"
                             },
                             "confidence": {
-                              "maximum": 1,
-                              "minimum": 0,
+                              "maximum": 1.0,
+                              "minimum": 0.0,
                               "type": "number"
                             },
                             "issuer": {
@@ -5258,8 +5258,8 @@
                                 "type": "boolean"
                               },
                               "confidence": {
-                                "maximum": 1,
-                                "minimum": 0,
+                                "maximum": 1.0,
+                                "minimum": 0.0,
                                 "type": "number"
                               },
                               "issuer": {
@@ -5399,8 +5399,8 @@
                               "type": "boolean"
                             },
                             "confidence": {
-                              "maximum": 1,
-                              "minimum": 0,
+                              "maximum": 1.0,
+                              "minimum": 0.0,
                               "type": "number"
                             },
                             "issuer": {
@@ -5554,7 +5554,7 @@
                     "type": "integer"
                   },
                   "cost": {
-                    "minimum": 0,
+                    "minimum": 0.0,
                     "type": "number"
                   },
                   "depth": {
@@ -5676,7 +5676,7 @@
                     "type": "integer"
                   },
                   "max_cost": {
-                    "minimum": 0,
+                    "minimum": 0.0,
                     "type": "number"
                   },
                   "max_depth": {
@@ -6040,8 +6040,8 @@
                 "type": "string"
               },
               "authenticity": {
-                "maximum": 1,
-                "minimum": 0,
+                "maximum": 1.0,
+                "minimum": 0.0,
                 "type": "number"
               },
               "author": {
@@ -6051,16 +6051,16 @@
                 "type": "string"
               },
               "credibility": {
-                "maximum": 1,
-                "minimum": 0,
+                "maximum": 1.0,
+                "minimum": 0.0,
                 "type": "number"
               },
               "hash_algorithm": {
                 "type": "string"
               },
               "independence": {
-                "maximum": 1,
-                "minimum": 0,
+                "maximum": 1.0,
+                "minimum": 0.0,
                 "type": "number"
               },
               "jurisdiction": {
@@ -6118,8 +6118,8 @@
                 "type": "string"
               },
               "reliability": {
-                "maximum": 1,
-                "minimum": 0,
+                "maximum": 1.0,
+                "minimum": 0.0,
                 "type": "number"
               },
               "request_id": {
@@ -6536,8 +6536,8 @@
                       "type": "boolean"
                     },
                     "confidence": {
-                      "maximum": 1,
-                      "minimum": 0,
+                      "maximum": 1.0,
+                      "minimum": 0.0,
                       "type": "number"
                     },
                     "issuer": {
@@ -6683,8 +6683,8 @@
           "type": "array"
         },
         "analytic_confidence": {
-          "maximum": 1,
-          "minimum": 0,
+          "maximum": 1.0,
+          "minimum": 0.0,
           "type": "number"
         },
         "assumptions": {
@@ -6694,8 +6694,8 @@
           "type": "array"
         },
         "bias": {
-          "maximum": 1,
-          "minimum": 0,
+          "maximum": 1.0,
+          "minimum": 0.0,
           "type": "number"
         },
         "caveats": {
@@ -6705,13 +6705,13 @@
           "type": "array"
         },
         "completeness": {
-          "maximum": 1,
-          "minimum": 0,
+          "maximum": 1.0,
+          "minimum": 0.0,
           "type": "number"
         },
         "confidence": {
-          "maximum": 1,
-          "minimum": 0,
+          "maximum": 1.0,
+          "minimum": 0.0,
           "type": "number"
         },
         "counterevidence": {
@@ -6725,8 +6725,8 @@
           "type": "object"
         },
         "deception_probability": {
-          "maximum": 1,
-          "minimum": 0,
+          "maximum": 1.0,
+          "minimum": 0.0,
           "type": "number"
         },
         "gaps": {
@@ -6736,8 +6736,8 @@
           "type": "array"
         },
         "impact": {
-          "maximum": 1,
-          "minimum": 0,
+          "maximum": 1.0,
+          "minimum": 0.0,
           "type": "number"
         },
         "inferences": {
@@ -6747,26 +6747,26 @@
           "type": "array"
         },
         "information_credibility": {
-          "maximum": 1,
-          "minimum": 0,
+          "maximum": 1.0,
+          "minimum": 0.0,
           "type": "number"
         },
         "likelihood": {
-          "maximum": 1,
-          "minimum": 0,
+          "maximum": 1.0,
+          "minimum": 0.0,
           "type": "number"
         },
         "notes": {
           "type": "string"
         },
         "priority": {
-          "maximum": 1,
-          "minimum": 0,
+          "maximum": 1.0,
+          "minimum": 0.0,
           "type": "number"
         },
         "relevance": {
-          "maximum": 1,
-          "minimum": 0,
+          "maximum": 1.0,
+          "minimum": 0.0,
           "type": "number"
         },
         "scores": {
@@ -6776,23 +6776,23 @@
           "type": "object"
         },
         "severity": {
-          "maximum": 1,
-          "minimum": 0,
+          "maximum": 1.0,
+          "minimum": 0.0,
           "type": "number"
         },
         "source_reliability": {
-          "maximum": 1,
-          "minimum": 0,
+          "maximum": 1.0,
+          "minimum": 0.0,
           "type": "number"
         },
         "threat": {
-          "maximum": 1,
-          "minimum": 0,
+          "maximum": 1.0,
+          "minimum": 0.0,
           "type": "number"
         },
         "uncertainty": {
-          "maximum": 1,
-          "minimum": 0,
+          "maximum": 1.0,
+          "minimum": 0.0,
           "type": "number"
         }
       },
@@ -6964,8 +6964,8 @@
             ]
           },
           "confidence": {
-            "maximum": 1,
-            "minimum": 0,
+            "maximum": 1.0,
+            "minimum": 0.0,
             "type": "number"
           },
           "content_hash": {
@@ -7222,8 +7222,8 @@
             "type": "boolean"
           },
           "confidence": {
-            "maximum": 1,
-            "minimum": 0,
+            "maximum": 1.0,
+            "minimum": 0.0,
             "type": "number"
           },
           "issuer": {
@@ -7460,28 +7460,28 @@
       "additionalProperties": false,
       "properties": {
         "accuracy": {
-          "maximum": 1,
-          "minimum": 0,
+          "maximum": 1.0,
+          "minimum": 0.0,
           "type": "number"
         },
         "completeness": {
-          "maximum": 1,
-          "minimum": 0,
+          "maximum": 1.0,
+          "minimum": 0.0,
           "type": "number"
         },
         "consistency": {
-          "maximum": 1,
-          "minimum": 0,
+          "maximum": 1.0,
+          "minimum": 0.0,
           "type": "number"
         },
         "coverage": {
-          "maximum": 1,
-          "minimum": 0,
+          "maximum": 1.0,
+          "minimum": 0.0,
           "type": "number"
         },
         "freshness": {
-          "maximum": 1,
-          "minimum": 0,
+          "maximum": 1.0,
+          "minimum": 0.0,
           "type": "number"
         },
         "last_validated_at": {
@@ -7502,13 +7502,13 @@
           "type": "array"
         },
         "timeliness": {
-          "maximum": 1,
-          "minimum": 0,
+          "maximum": 1.0,
+          "minimum": 0.0,
           "type": "number"
         },
         "uniqueness": {
-          "maximum": 1,
-          "minimum": 0,
+          "maximum": 1.0,
+          "minimum": 0.0,
           "type": "number"
         },
         "validation_errors": {
@@ -16747,8 +16747,8 @@
             "type": "string"
           },
           "authenticity": {
-            "maximum": 1,
-            "minimum": 0,
+            "maximum": 1.0,
+            "minimum": 0.0,
             "type": "number"
           },
           "author": {
@@ -16758,16 +16758,16 @@
             "type": "string"
           },
           "credibility": {
-            "maximum": 1,
-            "minimum": 0,
+            "maximum": 1.0,
+            "minimum": 0.0,
             "type": "number"
           },
           "hash_algorithm": {
             "type": "string"
           },
           "independence": {
-            "maximum": 1,
-            "minimum": 0,
+            "maximum": 1.0,
+            "minimum": 0.0,
             "type": "number"
           },
           "jurisdiction": {
@@ -16825,8 +16825,8 @@
             "type": "string"
           },
           "reliability": {
-            "maximum": 1,
-            "minimum": 0,
+            "maximum": 1.0,
+            "minimum": 0.0,
             "type": "number"
           },
           "request_id": {
