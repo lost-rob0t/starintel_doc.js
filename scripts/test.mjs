@@ -14,6 +14,9 @@ const tests = [
   ["test/v09-conformance.test.js", "expanded dtype metadata validates"],
   ["test/v09-conformance.test.js", "stable ids are deterministic"],
   ["test/operation-091.test.js", "supports operation in the 0.9.1 release"]
+  ,["test/v0101-migration.test.js", "shared compatibility fixtures"]
+  ,["test/v0101-migration.test.js", "migration is idempotent"]
+  ,["test/v0101-migration.test.js", "bad legacy documents are quarantined"]
 ];
 
 for (const [file, pattern] of tests) {

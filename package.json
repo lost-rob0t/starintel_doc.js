@@ -1,8 +1,9 @@
 {
   "name": "starintel_doc",
-  "version": "0.9.1",
-  "description": "Canonical JavaScript runtime, conformance adapter, and browser validator for the StarIntel 0.9.1 operation-compatible release",
+  "version": "0.10.1",
+  "description": "StarIntel 0.10.1 JavaScript runtime generated from the Star-Lang authority",
   "main": "./src/index.js",
+  "types": "./types/generated.d.ts",
   "browser": "./src/index.js",
   "bin": {
     "starintel-conformance": "./bin/starintel-conformance.js"
@@ -10,6 +11,10 @@
   "exports": {
     ".": "./src/index.js",
     "./conformance": "./src/v090.js",
+    "./conformance/0.10.1": "./src/v0101.js",
+    "./migration": "./src/migration.js",
+    "./types": "./types/generated.d.ts",
+    "./schema/0.10.1": "./schema/starintel-0.10.1.schema.json",
     "./schema": "./schema/starintel-doc-v0.9.0.schema.json",
     "./schema/expansion": "./schema/starintel-doc-v0.9.0.expansion.json",
     "./schema/manifest": "./schema/starintel-doc-v0.9.0.manifest.json"
@@ -18,16 +23,17 @@
     "bin",
     "src",
     "schema",
+    "types",
     "README.md",
     "LICENSE"
   ],
   "scripts": {
     "test": "node scripts/test.mjs",
     "conformance": "node ./bin/starintel-conformance.js",
-    "check": "node --check src/index.js && node --check src/v090.js && node --check src/document.js && node --check src/schema-bundle.js && node --check src/schema-org.js && node --check src/validation.js && node --check scripts/sync-schema.mjs && node --check scripts/test.mjs",
+    "check": "node --check src/index.js && node --check src/v0101.js && node --check src/migration.js && node --check src/v090.js && node --check src/document.js && node --check src/schema-bundle.js && node --check src/schema-org.js && node --check src/validation.js && node --check scripts/sync-schema.mjs && node --check scripts/test.mjs",
     "check-schema": "node scripts/sync-schema.mjs --offline --check",
     "sync-schema": "node scripts/sync-schema.mjs",
-    "prepack": "npm run check-schema && npm run check && npm test && test -s schema/starintel-doc-v0.9.0.schema.json && test -s schema/starintel-doc-v0.9.0.expansion.json && test -s schema/starintel-doc-v0.9.0.manifest.json"
+    "prepack": "npm run check-schema && npm run check && npm test && test -s schema/starintel-0.10.1.schema.json && test -s schema/starintel-0.10.1.compatibility.json && test -s schema/starintel-0.10.1.manifest.json"
   },
   "keywords": [
     "starintel",

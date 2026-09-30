@@ -1,122 +1,52 @@
 import { createHash } from "node:crypto";
-import { mkdir, readFile, rename, writeFile } from "node:fs/promises";
+import { copyFile, readFile } from "node:fs/promises";
 import { resolve } from "node:path";
 import process from "node:process";
 
 const lock = JSON.parse(await readFile(resolve("schema", "starintel-schema.lock.json"), "utf8"));
-const repository = process.env.STARINTEL_SCHEMA_REPOSITORY || lock.canonical_repository;
-const canonicalRef = process.env.STARINTEL_SCHEMA_REF || lock.canonical_commit;
-const baseSchemaRef = process.env.STARINTEL_BASE_SCHEMA_REF || canonicalRef;
-const expansionRef = process.env.STARINTEL_EXPANSION_REF || canonicalRef;
+const releaseLock = JSON.parse(await readFile(resolve("schema", "starintel-0.10.1.release-lock.json"), "utf8"));
+const canonicalRoot = process.env.STARLANG_ROOT;
 const offline = process.argv.includes("--offline");
 const check = process.argv.includes("--check");
 
-const files = [
-  "starintel-doc-v0.9.0.schema.json",
-  "starintel-doc-v0.9.0.expansion.json",
-  "starintel-doc-v0.9.0.manifest.json"
+const artifacts = [
+  ["specs/starintel/0.10.1/generated/schema.json", "schema/starintel-0.10.1.schema.json", "schema.json"],
+  ["specs/starintel/0.10.1/generated/portable-manifest.json", "schema/starintel-0.10.1.manifest.json", "portable-manifest.json"],
+  ["specs/starintel/0.10.1/compatibility.json", "schema/starintel-0.10.1.compatibility.json", null],
+  ["specs/starintel/0.10.1/compatibility-fixtures.json", "schema/starintel-0.10.1.compatibility-fixtures.json", null],
+  ["specs/starintel/0.10.1/generated/starintel_types.ts", "types/generated.d.ts", "starintel_types.ts"]
 ];
 
-function canonicalize(value) {
-  if (Array.isArray(value)) return value.map(canonicalize);
-  if (!value || typeof value !== "object") return value;
-  return Object.fromEntries(Object.keys(value).sort().map((key) => [key, canonicalize(value[key])]));
+function digest(data) {
+  return createHash("sha256").update(data).digest("hex");
 }
 
-function canonicalHash(value) {
-  return createHash("sha256").update(JSON.stringify(canonicalize(value))).digest("hex");
+function expectedHash(source, artifactName) {
+  if (artifactName) return releaseLock.artifacts[artifactName];
+  const name = source.split("/").at(-1);
+  return releaseLock.sources[name];
 }
 
-async function readLocal(name) {
-  return readFile(resolve("schema", name), "utf8");
+async function verifyLocal() {
+  for (const [source, destination, artifactName] of artifacts) {
+    const data = await readFile(resolve(destination));
+    const expected = expectedHash(source, artifactName);
+    if (!expected || digest(data) !== expected) throw new Error(`Star-Lang artifact drift: ${destination}`);
+  }
+  if (lock.release_version !== releaseLock.releaseVersion || lock.schema_version !== releaseLock.schemaVersion) {
+    throw new Error("consumer lock disagrees with the Star-Lang release lock");
+  }
+  console.log(`Star-Lang ${lock.release_version} artifacts verified at ${lock.canonical_commit}`);
 }
 
-async function verifyPayloads(payloads) {
-  const schema = JSON.parse(payloads.get("starintel-doc-v0.9.0.schema.json"));
-  const expansion = JSON.parse(payloads.get("starintel-doc-v0.9.0.expansion.json"));
-  const manifest = JSON.parse(payloads.get("starintel-doc-v0.9.0.manifest.json"));
-  const actualHash = canonicalHash(expansion);
-  const researchBranch = (schema.allOf || []).find(
-    (branch) => branch?.if?.properties?.dtype?.const === "research-node"
-  );
-  const operationBranch = (schema.allOf || []).find(
-    (branch) => branch?.if?.properties?.dtype?.const === "operation"
-  );
+if (!offline && !canonicalRoot) {
+  throw new Error("set STARLANG_ROOT to the pinned Star-Lang checkout, or use --offline --check");
+}
 
-  if (!researchBranch) throw new Error("canonical schema does not contain research-node");
-  if (!operationBranch) throw new Error("canonical schema does not contain operation");
-  if (!expansion.dtype_fields?.["research-node"]) throw new Error("schema expansion does not contain research-node");
-  if (!expansion.dtype_fields?.operation) throw new Error("schema expansion does not contain operation");
-  if (manifest.schema_version !== expansion.schema_version) throw new Error("schema bundle version mismatch");
-  if (manifest.schema_revision !== expansion.schema_revision) throw new Error("schema bundle revision mismatch");
-  if (manifest.profile !== expansion.profile || manifest.profile_version !== expansion.profile_version) {
-    throw new Error("schema bundle profile mismatch");
-  }
-  if (manifest.release_version !== lock.release_version) {
-    throw new Error(`schema bundle release mismatch: expected ${lock.release_version}, got ${manifest.release_version}`);
-  }
-  if (manifest.expansion_content_hash !== actualHash) {
-    throw new Error(`schema bundle hash mismatch: expected ${manifest.expansion_content_hash}, got ${actualHash}`);
-  }
-  if (manifest.dtype_count !== Object.keys(expansion.dtype_fields || {}).length) {
-    throw new Error("schema bundle dtype count mismatch");
+if (canonicalRoot && !check) {
+  for (const [source, destination] of artifacts) {
+    await copyFile(resolve(canonicalRoot, source), resolve(destination));
   }
 }
 
-async function fetchFile(name, ref) {
-  const url = `https://raw.githubusercontent.com/${repository}/${ref}/schemas/${name}`;
-  const response = await fetch(url, { headers: { accept: "application/json" } });
-  if (!response.ok) throw new Error(`failed to fetch ${name} from ${ref}: ${response.status} ${response.statusText}`);
-
-  // Preserve the canonical artifact text exactly. Parsing and reserializing here
-  // changes valid JSON lexical forms (for example 1.0 -> 1), which means a
-  // consumer can be semantically equivalent while no longer shipping the
-  // canonical release artifact byte-for-byte.
-  return response.text();
-}
-
-async function localPayloads() {
-  return new Map(await Promise.all(files.map(async (name) => [name, await readLocal(name)])));
-}
-
-if (offline) {
-  const payloads = await localPayloads();
-  await verifyPayloads(payloads);
-  console.log("local StarIntel v0.9 schema bundle verified");
-  process.exit(0);
-}
-
-const fetched = new Map();
-for (const name of files) {
-  const ref = name.endsWith("schema.json") ? baseSchemaRef : expansionRef;
-  fetched.set(name, await fetchFile(name, ref));
-  console.log(`fetched ${name} from ${ref}`);
-}
-await verifyPayloads(fetched);
-
-if (check) {
-  let drift = false;
-  for (const name of files) {
-    let current = "";
-    try {
-      current = await readLocal(name);
-    } catch {
-      // Missing local files are drift.
-    }
-    if (current !== fetched.get(name)) {
-      console.error(`schema drift detected: schema/${name}`);
-      drift = true;
-    }
-  }
-  if (drift) process.exitCode = 1;
-  else console.log("canonical StarIntel v0.9 schema bundle is current");
-} else {
-  await mkdir(resolve("schema"), { recursive: true });
-  for (const name of files) {
-    const output = resolve("schema", name);
-    const temporary = `${output}.tmp-${process.pid}`;
-    await writeFile(temporary, fetched.get(name), "utf8");
-    await rename(temporary, output);
-    console.log(`wrote ${output}`);
-  }
-}
+await verifyLocal();
