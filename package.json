@@ -10,8 +10,14 @@
   },
   "exports": {
     ".": {
-      "types": "./src/index.d.ts",
-      "require": "./src/index.js",
+      "import": {
+        "types": "./src/index.d.mts",
+        "default": "./src/index.mjs"
+      },
+      "require": {
+        "types": "./src/index.d.ts",
+        "default": "./src/index.js"
+      },
       "default": "./src/index.js"
     },
     "./conformance": "./src/v090.js",
@@ -20,7 +26,10 @@
     "./schema/manifest": "./schema/starintel-doc-v0.9.0.manifest.json",
     "./legacy": "./src/legacy.js",
     "./canonical": "./src/canonical.js",
-    "./types": "./schemas/starintel-0.10.1/generated/starintel_types.ts"
+    "./types": {
+      "types": "./src/canonical-types.d.ts",
+      "default": "./schemas/starintel-0.10.1/generated/starintel_types.ts"
+    }
   },
   "files": [
     "bin",

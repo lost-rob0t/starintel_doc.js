@@ -1,0 +1,20 @@
+import canonical from "./canonical.js";
+import legacy from "./legacy.js";
+
+export const SPEC_VERSION = canonical.SPEC_VERSION;
+export const ADAPTER_VERSION = canonical.ADAPTER_VERSION;
+export const schema = canonical.schema;
+export const manifest = canonical.manifest;
+export const documentTypes = canonical.documentTypes;
+export const parseJson = canonical.parseJson;
+export const stringifyJson = canonical.stringifyJson;
+export const dtypes = canonical.dtypes;
+export const validateDocument = canonical.validateDocument;
+export const validateRawDocument = canonical.validateRawDocument;
+export const assertDocument = canonical.assertDocument;
+export const assertRawDocument = canonical.assertRawDocument;
+export const roundtrip = canonical.roundtrip;
+export const createDocument = canonical.createDocument;
+export const capabilities = canonical.capabilities;
+export { legacy };
+export default { ...canonical, legacy };
