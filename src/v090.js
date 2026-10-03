@@ -31,7 +31,7 @@ function schemaPath() {
   if (process.env.STARINTEL_CONFORMANCE_ROOT) {
     return path.join(process.env.STARINTEL_CONFORMANCE_ROOT, "schemas", "starintel-doc-v0.9.0.schema.json");
   }
-  return path.resolve(process.cwd(), "schemas", "starintel-doc-v0.9.0.schema.json");
+  return path.resolve(__dirname, "../schema/starintel-doc-v0.9.0.schema.json");
 }
 
 function loadSchema() {

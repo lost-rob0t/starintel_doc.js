@@ -1,27 +1,8 @@
 import { spawnSync } from "node:child_process";
+import { readdirSync } from "node:fs";
 
-const tests = [
-  ["test/document.test.js", "normalizes the canonical"],
-  ["test/document.test.js", "supports every canonical"],
-  ["test/document.test.js", "supports expanded names"],
-  ["test/document.test.js", "creates schema-valid"],
-  ["test/document.test.js", "accepts strict Schema.org"],
-  ["test/document.test.js", "rejects undeclared direct Schema.org"],
-  ["test/document.test.js", "rejects unknown top-level"],
-  ["test/v09-conformance.test.js", "schema expansion manifest verifies"],
-  ["test/v09-conformance.test.js", "all dtypes expose additive fields"],
-  ["test/v09-conformance.test.js", "normalized documents carry revisioned required fields"],
-  ["test/v09-conformance.test.js", "expanded dtype metadata validates"],
-  ["test/v09-conformance.test.js", "stable ids are deterministic"],
-  ["test/operation-091.test.js", "supports operation in the 0.9.1 release"]
-];
-
-for (const [file, pattern] of tests) {
-  const result = spawnSync(
-    process.execPath,
-    ["--test", `--test-name-pattern=${pattern}`, file],
-    { stdio: "inherit" }
-  );
-  if (result.error) throw result.error;
-  if (result.status !== 0) process.exit(result.status ?? 1);
-}
+const files = readdirSync("test").filter(file => file.endsWith(".test.js")).sort();
+const result = spawnSync(process.execPath, ["--test", ...files.map(file => `test/${file}`)],
+                         { stdio: "inherit" });
+if (result.error) throw result.error;
+process.exit(result.status ?? 1);

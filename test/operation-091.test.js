@@ -1,7 +1,7 @@
 const test = require("node:test");
 const assert = require("node:assert/strict");
 
-const { createDocument, validateRawDocument, dtypes, fieldsForDtype } = require("../src");
+const { createDocument, validateRawDocument, dtypes, fieldsForDtype } = require("../src/legacy");
 
 const stamp = "2026-09-09T01:00:00.000Z";
 

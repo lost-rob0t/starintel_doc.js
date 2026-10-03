@@ -1,32 +1,41 @@
 {
   "name": "starintel_doc",
-  "version": "0.9.1",
-  "description": "Canonical JavaScript runtime, conformance adapter, and browser validator for the StarIntel 0.9.1 operation-compatible release",
+  "version": "0.10.1",
+  "description": "StarLang-generated StarIntel 0.10.1 runtime with explicit historical compatibility",
   "main": "./src/index.js",
   "browser": "./src/index.js",
   "bin": {
-    "starintel-conformance": "./bin/starintel-conformance.js"
+    "starintel-conformance": "./bin/starintel-conformance.js",
+    "starintel-canonical": "./bin/starintel-canonical.js"
   },
   "exports": {
-    ".": "./src/index.js",
+    ".": {
+      "types": "./src/index.d.ts",
+      "require": "./src/index.js",
+      "default": "./src/index.js"
+    },
     "./conformance": "./src/v090.js",
-    "./schema": "./schema/starintel-doc-v0.9.0.schema.json",
+    "./schema": "./schemas/starintel-0.10.1/generated/schema.json",
     "./schema/expansion": "./schema/starintel-doc-v0.9.0.expansion.json",
-    "./schema/manifest": "./schema/starintel-doc-v0.9.0.manifest.json"
+    "./schema/manifest": "./schema/starintel-doc-v0.9.0.manifest.json",
+    "./legacy": "./src/legacy.js",
+    "./canonical": "./src/canonical.js",
+    "./types": "./schemas/starintel-0.10.1/generated/starintel_types.ts"
   },
   "files": [
     "bin",
     "src",
     "schema",
     "README.md",
-    "LICENSE"
+    "LICENSE",
+    "schemas"
   ],
   "scripts": {
     "test": "node scripts/test.mjs",
     "conformance": "node ./bin/starintel-conformance.js",
-    "check": "node --check src/index.js && node --check src/v090.js && node --check src/document.js && node --check src/schema-bundle.js && node --check src/schema-org.js && node --check src/validation.js && node --check scripts/sync-schema.mjs && node --check scripts/test.mjs",
-    "check-schema": "node scripts/sync-schema.mjs --offline --check",
-    "sync-schema": "node scripts/sync-schema.mjs",
+    "check": "node --check src/index.js && node --check src/v090.js && node --check src/document.js && node --check src/schema-bundle.js && node --check src/schema-org.js && node --check src/validation.js && node --check scripts/sync-schema.mjs && node --check scripts/test.mjs && node --check src/canonical.js && node --check bin/starintel-canonical.js",
+    "check-schema": "python3 scripts/sync-starintel-schema.py --offline && node scripts/sync-schema.mjs --offline --check",
+    "sync-schema": "python3 scripts/sync-starintel-schema.py",
     "prepack": "npm run check-schema && npm run check && npm test && test -s schema/starintel-doc-v0.9.0.schema.json && test -s schema/starintel-doc-v0.9.0.expansion.json && test -s schema/starintel-doc-v0.9.0.manifest.json"
   },
   "keywords": [
@@ -54,6 +63,8 @@
     "ulid": "^2.3.0"
   },
   "devDependencies": {
-    "prettier": "^3.2.5"
-  }
+    "prettier": "^3.2.5",
+    "typescript": "^5.9.3"
+  },
+  "types": "./src/index.d.ts"
 }

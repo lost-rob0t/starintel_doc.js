@@ -10,7 +10,7 @@ const {
   fieldsForDtype,
   schema,
   dtypes
-} = require("../src");
+} = require("../src/legacy");
 
 const stamp = "2026-07-26T23:40:00.000Z";
 

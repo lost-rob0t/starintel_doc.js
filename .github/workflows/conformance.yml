@@ -16,14 +16,14 @@ jobs:
 
       - name: Validate canonical schema lock
         run: |
-          test "$(jq -r .canonical_repository schema/starintel-schema.lock.json)" = "lost-rob0t/starintel-gpt-auto-dig"
-          test "$(jq -r .release_version schema/starintel-schema.lock.json)" = "0.9.1"
-          jq -e '.required_dtypes | index("research-node") != null' schema/starintel-schema.lock.json > /dev/null
-          jq -e '.required_dtypes | index("operation") != null' schema/starintel-schema.lock.json > /dev/null
+          test "$(jq -r .canonical_repository schema/starintel-legacy-schema.lock.json)" = "lost-rob0t/starintel-gpt-auto-dig"
+          test "$(jq -r .release_version schema/starintel-legacy-schema.lock.json)" = "0.9.1"
+          jq -e '.required_dtypes | index("research-node") != null' schema/starintel-legacy-schema.lock.json > /dev/null
+          jq -e '.required_dtypes | index("operation") != null' schema/starintel-legacy-schema.lock.json > /dev/null
 
       - name: Read canonical schema lock
         id: schema-lock
-        run: echo "commit=$(jq -r .canonical_commit schema/starintel-schema.lock.json)" >> "$GITHUB_OUTPUT"
+        run: echo "commit=$(jq -r .canonical_commit schema/starintel-legacy-schema.lock.json)" >> "$GITHUB_OUTPUT"
 
       - name: Checkout pinned conformance source
         uses: actions/checkout@v6
@@ -55,6 +55,9 @@ jobs:
       - name: Require clean canonical bundle
         run: git diff --exit-code -- schema/starintel-doc-v0.9.0.schema.json schema/starintel-doc-v0.9.0.expansion.json schema/starintel-doc-v0.9.0.manifest.json
 
+      - name: Verify the complete immutable StarLang release
+        run: python3 scripts/sync-starintel-schema.py
+
       - name: Run JavaScript tests
         env:
           STARINTEL_CONFORMANCE_ROOT: ${{ github.workspace }}/conformance-source
@@ -66,7 +69,7 @@ jobs:
           python -m conformance.runner test \
             --producer js \
             --consumer js \
-            --adapter "js=node $GITHUB_WORKSPACE/bin/starintel-conformance.js"
+            --adapter "js=node $GITHUB_WORKSPACE/bin/starintel-legacy-conformance.js"
 
       - name: Upload generated lockfile
         if: always()
