@@ -1,4 +1,45 @@
-# starintel_doc.js
+# StarIntel documents for JavaScript
+
+StarLang is the only specification authority. The default API consumes the full
+immutable generated **0.10.1** release pinned in `schema/starintel-schema.lock.json`.
+Generated schema, manifest, TypeScript/Nim/Python/Lisp bindings and compatibility
+fixtures are vendored together; do not regenerate or edit semantics here.
+
+```js
+const starintel = require("starintel_doc");
+const person = starintel.createDocument("person", {
+  id: "person:ada", dataset: "example", fname: "Ada"
+});
+starintel.assertDocument(person);
+```
+
+Validation selects the concrete generated document schema, follows references
+and formats, and enforces exact decimal bounds/scale from the portable manifest.
+Decimal wire values remain strings. Canonical fields are flat lowerCamelCase;
+`data`, `_id` and `schema_version` are rejected. TypeScript users consume the
+actual generated types through the package declarations or the `./types` export.
+
+Historical APIs are explicitly selected with `require("starintel_doc").legacy`
+or `require("starintel_doc/legacy")`. The conformance command defaults to 0.10.1;
+an explicit `spec_version: "0.9.0"` selects the archived legacy adapter. Historical
+builders do not emit the canonical 0.10.1 wire format. No corpus migration is
+performed by this package update.
+
+```sh
+npm run sync-schema -- --commit FULL_IMMUTABLE_STARLANG_SHA
+python3 scripts/sync-starintel-schema.py  # exact upstream bytes (CI)
+npm run check-schema                    # full offline package closure + legacy bundle
+npm run check
+npm test
+npx tsc --noEmit --strict --lib es2022 schemas/starintel-0.10.1/generated/starintel_types.ts
+npm pack
+```
+
+The following reference describes only the explicit historical API. Replace
+`require("starintel_doc")` in its examples with `require("starintel_doc/legacy")`.
+Its old release metadata is not the current specification authority.
+
+# Historical 0.9 API reference
 
 Canonical JavaScript runtime for **StarIntel release 0.9.1 on the immutable v0.9.0 wire schema**.
 
