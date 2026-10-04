@@ -1,4 +1,57 @@
-# starintel_doc.js
+# StarIntel documents for JavaScript
+
+StarLang is the only specification authority. The default API consumes the full
+immutable generated **0.10.1** release pinned in `schema/starintel-schema.lock.json`.
+Generated schema, manifest, TypeScript/Nim/Python/Lisp bindings and compatibility
+fixtures are vendored together; do not regenerate or edit semantics here.
+
+```js
+const starintel = require("starintel_doc");
+const person = starintel.createDocument("person", {
+  id: "person:ada", dataset: "example", fname: "Ada"
+});
+starintel.assertDocument(person);
+```
+
+Validation selects the concrete generated document schema, follows references
+and formats, and enforces exact decimal bounds/scale from the portable manifest.
+Decimal wire values remain strings. Use `parseJson` and `stringifyJson` for wire
+JSON so numbers outside JavaScript's safe range retain their exact values.
+Such values are represented by `LosslessNumber`; validation checks integer and
+numeric bounds without restricting the schema to IEEE-754 or signed 64-bit
+ranges. Unsafe native numbers are rejected because their original precision
+cannot be recovered. Canonical fields are flat lowerCamelCase;
+`data`, `_id` and `schema_version` are rejected. TypeScript users consume the
+a declaration-only facade of the generated interfaces through package declarations
+or the `./types` export. ESM named/default imports and CommonJS are supported.
+The runtime inventory contains the persistent document types declared by the locked manifest; transient component
+records are not accepted as standalone documents. Operation validation also
+enforces the locked reference semantics for phase DAGs, cross-references, scope
+exclusions, completion evidence and terminal phase states. Dataset manifests reject duplicate original map keys.
+Supported historical workflow field mappings are exported as `workflowMappings`;
+consumers must apply these mappings explicitly rather than wrapping native fields.
+
+Historical APIs are explicitly selected with `require("starintel_doc").legacy`
+or `require("starintel_doc/legacy")`. The conformance command defaults to 0.10.1;
+an explicit `spec_version: "0.9.0"` selects the archived legacy adapter. Historical
+builders do not emit the canonical 0.10.1 wire format. No corpus migration is
+performed by this package update.
+
+```sh
+npm run sync-schema -- --commit FULL_IMMUTABLE_STARLANG_SHA
+python3 scripts/sync-starintel-schema.py  # exact upstream bytes (CI)
+npm run check-schema                    # full offline package closure + legacy bundle
+npm run check
+npm test
+npx tsc --noEmit --strict --lib es2022 schemas/starintel-0.10.1/generated/starintel_types.ts
+npm pack
+```
+
+The following reference describes only the explicit historical API. Replace
+`require("starintel_doc")` in its examples with `require("starintel_doc/legacy")`.
+Its old release metadata is not the current specification authority.
+
+# Historical 0.9 API reference
 
 Canonical JavaScript runtime for **StarIntel release 0.9.1 on the immutable v0.9.0 wire schema**.
 

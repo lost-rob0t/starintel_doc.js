@@ -3,7 +3,7 @@ import { mkdir, readFile, rename, writeFile } from "node:fs/promises";
 import { resolve } from "node:path";
 import process from "node:process";
 
-const lock = JSON.parse(await readFile(resolve("schema", "starintel-schema.lock.json"), "utf8"));
+const lock = JSON.parse(await readFile(resolve("schema", "starintel-legacy-schema.lock.json"), "utf8"));
 const repository = process.env.STARINTEL_SCHEMA_REPOSITORY || lock.canonical_repository;
 const canonicalRef = process.env.STARINTEL_SCHEMA_REF || lock.canonical_commit;
 const baseSchemaRef = process.env.STARINTEL_BASE_SCHEMA_REF || canonicalRef;

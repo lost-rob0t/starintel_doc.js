@@ -24,7 +24,7 @@ const {
   expansion,
   manifest,
   dtypes
-} = require("../src");
+} = require("../src/legacy");
 
 test("normalizes the canonical revisioned v0.9 envelope", () => {
   const document = normalizeDocument({
