@@ -63,10 +63,18 @@ function slug(value) {
     .replace(/^-+|-+$/g, "") || "document";
 }
 
-function stableDocumentId(dtype, identity) {
+function stableDocumentId(dtype, ...identity) {
   const canonical = canonicalDtype(dtype);
-  const values = Array.isArray(identity) ? identity : [identity];
-  const key = values.map((value) => JSON.stringify(value ?? "")).join("\u001f");
+  const values = identity.length === 1 && Array.isArray(identity[0]) ? identity[0] : identity;
+  // Match the shared historical compact JSON identity vector.
+  function canonicalJson(value) {
+    if (Array.isArray(value)) return `[${value.map(canonicalJson).join(",")}]`;
+    if (value !== null && typeof value === "object") {
+      return `{${Object.keys(value).sort().map(key => `${JSON.stringify(key)}:${canonicalJson(value[key])}`).join(",")}}`;
+    }
+    return JSON.stringify(value);
+  }
+  const key = values.map(canonicalJson).join("\u001f");
   const digest = createHash("sha256").update(key).digest("hex").slice(0, 20);
   const label = slug(values.find((value) => value != null && value !== "") || digest).slice(0, 64);
   return `starintel:${canonical}:${label}-${digest}`;
