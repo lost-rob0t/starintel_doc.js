@@ -4,9 +4,16 @@ const Ajv2020 = require("ajv/dist/2020");
 const addFormats = require("ajv-formats");
 const {
   isLosslessNumber,
-  parse: parseLosslessJson,
+  parse: parseLegacyJson,
   stringify: stringifyLosslessJson,
 } = require("lossless-json");
+
+const { inspectJsonKeys } = require("./json-keys");
+
+function parseLosslessJson(text, reviver, options) {
+  inspectJsonKeys(text);
+  return parseLegacyJson(text, reviver, options);
+}
 
 const SPEC_VERSION = "0.9.0";
 const ADAPTER_VERSION = 1;

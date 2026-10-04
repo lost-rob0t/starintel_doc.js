@@ -1,3 +1,4 @@
+const { inspectJsonKeys } = require("./json-keys");
 const { validateWorkflowSemantics } = require("./workflow-semantics");
 const workflowMappings = require("../schemas/starintel-0.10.1/supported-workflow-mappings.json");
 const { validateOperationSemantics } = require("./operation-semantics");
@@ -172,9 +173,7 @@ function parseJson(text) {
   // The dependency creates objects with assignment, which treats __proto__ as a
   // setter. Protect that decoded key before parsing, including escaped spellings.
   // Pick a key absent from the input so ordinary extension keys cannot collide.
-  const keyTokens = [...text.matchAll(/"(?:\\.|[^"\\])*"/g)]
-    .filter(match => /^[ \t\r\n]*:/.test(text.slice(match.index + match[0].length)));
-  const keys = new Set(keyTokens.map(match => JSON.parse(match[0])));
+  const { keyTokens, keys } = inspectJsonKeys(text);
   let protectedKey = "__starintel_proto__";
   const protect = keys.has("__proto__");
   if (protect) {

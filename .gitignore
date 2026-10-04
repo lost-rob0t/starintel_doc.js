@@ -1,3 +1,6 @@
 node_modules/
 artifacts/
 *.tgz
+
+# Local dependencies, including linked development installs.
+/node_modules

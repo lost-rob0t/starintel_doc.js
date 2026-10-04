@@ -191,10 +191,7 @@ test("opaque extensions cannot impersonate lossless numeric instances", () => {
   assert.equal(result.status, 0, result.stdout + result.stderr);
   assert.deepEqual(runtime.parseJson(result.stdout).document, value);
   assert.throws(() => runtime.parseJson('{"__proto__":1,"__pro\\u0074o__":2}'), /duplicate key/i);
-  const duplicate = runtime.parseJson('{"__proto__":1,"__pro\\u0074o__":1}');
-  assert.equal(Object.hasOwn(duplicate, "__proto__"), true);
-  assert.equal(duplicate.__proto__, 1);
-  assert.equal(Object.getPrototypeOf(duplicate), Object.prototype);
+  assert.throws(() => runtime.parseJson('{"__proto__":1,"__pro\\u0074o__":1}'), /duplicate key/i);
 });
 
 test("exact JSON serialization rejects nonfinite numbers and cycles", () => {
