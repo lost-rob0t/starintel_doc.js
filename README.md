@@ -203,3 +203,12 @@ npm run check
 npm test
 npm pack --dry-run
 ```
+
+## Raw JSON object keys
+
+Raw JSON parsers reject duplicate decoded object keys, including equal values
+and escaped spellings, before a mapping can overwrite them. Each object has its
+own key scope. Unicode normalization is not applied to distinct key strings.
+The shared raw-text regression corpus is vendored in test/fixtures/raw-json-unique-keys.json;
+it must match the StarLang specs/starintel/wire authority copy. Already-parsed
+objects cannot recover duplicates discarded by an upstream decoder.
